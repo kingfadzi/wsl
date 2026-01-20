@@ -50,6 +50,9 @@ Config files are stored on Windows and symlinked into WSL on first login:
 | Linux Path | Windows Path |
 |------------|--------------|
 | `/etc/krb5.conf` | `C:\devhome\projects\wsl\krb5\krb5.conf` |
+| `/etc/odbc.ini` | `C:\devhome\projects\wsl\odbc\odbc.ini` |
+| `/etc/odbcinst.ini` | `C:\devhome\projects\wsl\odbc\odbcinst.ini` |
+| `/opt/wsl-certs` | `C:\devhome\projects\wsl\certs\` |
 | `~/.ssh/` | `C:\devhome\projects\wsl\ssh\` |
 | `~/.claude/` | `C:\devhome\projects\wsl\claude\` |
 | `~/Downloads` | `C:\Users\{username}\Downloads\` |
@@ -57,7 +60,10 @@ Config files are stored on Windows and symlinked into WSL on first login:
 
 Create the Windows folders before first login:
 ```powershell
-mkdir C:\devhome\projects\wsl\krb5\cache
+mkdir C:\devhome\projects\wsl\krb5
+mkdir C:\devhome\projects\wsl\odbc
+mkdir C:\devhome\projects\wsl\certs\ca
+mkdir C:\devhome\projects\wsl\certs\java
 mkdir C:\devhome\projects\wsl\ssh
 mkdir C:\devhome\projects\wsl\claude
 ```
@@ -80,7 +86,7 @@ journalctl -u superset-web -f
 
 ## Certificates
 
-Place in `certs/` before building:
+**Option 1: Build-time** - Place in `certs/` before building:
 
 | Type | Files | Profiles |
 |------|-------|----------|
@@ -88,11 +94,24 @@ Place in `certs/` before building:
 | Zscaler | `*.cer` | vpn only |
 | Java keystore | `*.cacerts` | Both |
 
+**Option 2: Runtime** - Place in Windows mount for auto-update on login:
+
+```
+C:\devhome\projects\wsl\certs\
+├── ca\
+│   ├── corporate-ca.pem    # Copied directly
+│   └── zscaler.cer         # Converted to PEM
+└── java\
+    └── cacerts             # Replaces Java keystore
+```
+
+Drop any `.pem`, `.crt`, or `.cer` into `ca\` and it will be installed on next login.
+
 ## Backup & Restore
 
 ```bash
-sudo backup_postgres.sh --all --yes   # Backup all DBs
-sudo restore_postgres.sh superset     # Restore specific DB
+sudo backup-postgres.sh --all --yes   # Backup all DBs
+sudo restore-postgres.sh superset     # Restore specific DB
 ```
 
 Automated daily backup at 3 AM via cron.
