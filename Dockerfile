@@ -91,7 +91,7 @@ RUN CERTS_INSTALLED=0; \
     fi
 
 # ===== Proxy passthrough script (reads Windows env vars at login) =====
-COPY scripts/proxy.sh /etc/profile.d/proxy.sh
+COPY scripts/profile.d/proxy.sh /etc/profile.d/proxy.sh
 RUN chmod 644 /etc/profile.d/proxy.sh
 
 # ===== Runtimes =====
@@ -178,7 +178,7 @@ RUN dnf module enable -y redis:7 \
 RUN sed -i 's/^bind .*/bind 127.0.0.1/' /etc/redis/redis.conf
 
 # ===== Create databases (requires postgres running, done via init script) =====
-COPY scripts/init-postgres.sh /tmp/
+COPY scripts/init/postgres.sh /tmp/init-postgres.sh
 RUN chmod +x /tmp/init-postgres.sh && /tmp/init-postgres.sh && rm /tmp/init-postgres.sh
 
 # ===== Superset =====
@@ -206,7 +206,7 @@ RUN /opt/superset/venv/bin/pip install \
 COPY config/superset_config.py /opt/superset/config/superset_config.py
 
 # Initialize Superset (db migrations, admin user)
-COPY scripts/init-superset.sh /tmp/
+COPY scripts/init/superset.sh /tmp/init-superset.sh
 RUN chmod +x /tmp/init-superset.sh && /tmp/init-superset.sh && rm /tmp/init-superset.sh
 
 # ===== Metabase =====
@@ -222,7 +222,7 @@ RUN mkdir -p /opt/affine \
     | tar -xzf - -C /opt/affine
 
 # Run AFFiNE install.sh (migrations, admin user)
-COPY scripts/init-affine.sh /tmp/
+COPY scripts/init/affine.sh /tmp/init-affine.sh
 RUN chmod +x /tmp/init-affine.sh && /tmp/init-affine.sh && rm /tmp/init-affine.sh
 
 # ===== Claude Code =====
@@ -256,20 +256,21 @@ COPY config/systemd/metabase.service /etc/systemd/system/
 COPY config/systemd/affine.service /etc/systemd/system/
 
 # ===== Backup/restore scripts =====
-COPY scripts/backup_postgres.sh /usr/local/bin/
-COPY scripts/restore_postgres.sh /usr/local/bin/
+COPY scripts/bin/backup-postgres.sh /usr/local/bin/
+COPY scripts/bin/restore-postgres.sh /usr/local/bin/
 
 # ===== AFFiNE start script =====
-COPY scripts/start-affine.sh /usr/local/bin/
+COPY scripts/bin/start-affine.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/*.sh
 
 # ===== Windows mounts setup (symlinks on first login) =====
-COPY scripts/setup-mounts.sh /etc/profile.d/01-mounts.sh
-RUN chmod 644 /etc/profile.d/01-mounts.sh
+COPY scripts/profile.d/mounts.sh /etc/profile.d/01-mounts.sh
+COPY scripts/profile.d/certs.sh /etc/profile.d/02-certs.sh
+RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh
 
 # ===== Cron for backups =====
-RUN echo "0 3 * * * root /usr/local/bin/backup_postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \
+RUN echo "0 3 * * * root /usr/local/bin/backup-postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \
     && chmod 644 /etc/cron.d/postgresql-backup
 
 # ===== Enable services for systemd =====
