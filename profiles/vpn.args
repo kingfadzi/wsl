@@ -2,6 +2,7 @@
 # Usage: docker build --build-arg PROFILE=vpn $(cat profiles/vpn.args | sed 's/^/--build-arg /') .
 
 DNS_SERVERS=8.8.8.8 8.8.4.4
-PYPI_INDEX_URL=https://nexus.corp/pypi/simple
-PYPI_TRUSTED_HOST=nexus.corp
-NPM_REGISTRY=https://nexus.corp/npm
+# Use public registries (leave empty for defaults)
+PYPI_INDEX_URL=
+PYPI_TRUSTED_HOST=
+NPM_REGISTRY=
