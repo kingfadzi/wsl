@@ -5,6 +5,7 @@ ARG PROFILE=vpn
 ARG PYTHON_VERSION=3.11
 ARG NODE_VERSION=22
 ARG JAVA_VERSION=21
+ARG GRADLE_VERSION=8.5
 ARG SUPERSET_VERSION=6.0.0
 ARG METABASE_VERSION=0.50.21
 ARG AFFINE_VERSION=0.16.3
@@ -14,6 +15,9 @@ ARG PYPI_INDEX_URL=
 ARG PYPI_TRUSTED_HOST=
 ARG NPM_REGISTRY=
 ARG MAVEN_REPO_URL=
+ARG GRADLE_REPO_URL=
+ARG GRADLE_DIST_URL=
+ARG WIN_BASE_DIR=/mnt/c/devhome/projects/wsl
 ARG BACKUP_DIR=/mnt/f/backups/postgresql
 
 # ===== Base packages =====
@@ -22,7 +26,14 @@ RUN dnf install -y --allowerasing \
     iputils net-tools procps-ng findutils \
     sudo passwd cronie gcc gcc-c++ make \
     ca-certificates tar gzip openssl \
+    krb5-workstation krb5-devel \
+    unixODBC unixODBC-devel \
+    maven \
     && dnf clean all
+
+# ===== SQL Server ODBC driver (from corp repos) =====
+RUN ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 && dnf clean all
+ENV PATH="$PATH:/opt/mssql-tools18/bin"
 
 # ===== WSL config =====
 COPY config/wsl.conf /etc/wsl.conf
@@ -114,6 +125,32 @@ RUN if ls /tmp/certs/*.cacerts 2>/dev/null; then \
     fi; \
     rm -rf /tmp/certs
 
+# ===== Gradle =====
+ARG GRADLE_VERSION
+ARG GRADLE_DIST_URL
+RUN GRADLE_URL="${GRADLE_DIST_URL:-https://services.gradle.org/distributions}/gradle-${GRADLE_VERSION}-bin.zip" && \
+    curl -fsSL "$GRADLE_URL" -o /tmp/gradle.zip && \
+    unzip -q /tmp/gradle.zip -d /opt && \
+    mv /opt/gradle-${GRADLE_VERSION} /opt/gradle && \
+    rm /tmp/gradle.zip
+ENV PATH="$PATH:/opt/gradle/bin"
+
+# ===== Maven settings (corporate mirror) =====
+ARG MAVEN_REPO_URL
+COPY config/maven-settings.xml /tmp/maven-settings.xml
+RUN if [ -n "$MAVEN_REPO_URL" ]; then \
+      mkdir -p /etc/skel/.m2 && \
+      sed "s|MAVEN_REPO_URL|$MAVEN_REPO_URL|g" /tmp/maven-settings.xml > /etc/skel/.m2/settings.xml; \
+    fi && rm -f /tmp/maven-settings.xml
+
+# ===== Gradle init (corporate mirror) =====
+ARG GRADLE_REPO_URL
+COPY config/gradle-init.gradle /tmp/gradle-init.gradle
+RUN if [ -n "$GRADLE_REPO_URL" ]; then \
+      mkdir -p /etc/skel/.gradle && \
+      sed "s|GRADLE_REPO_URL|$GRADLE_REPO_URL|g" /tmp/gradle-init.gradle > /etc/skel/.gradle/init.gradle; \
+    fi && rm -f /tmp/gradle-init.gradle
+
 # ===== PostgreSQL (from AppStream module) =====
 RUN dnf module enable -y postgresql:15 \
     && dnf install -y postgresql-server postgresql-contrib \
@@ -157,7 +194,8 @@ ARG SUPERSET_VERSION
 # Pin marshmallow<4 due to compatibility issue with Superset 4.0
 RUN /opt/superset/venv/bin/pip install \
     "marshmallow<4" \
-    "apache-superset[postgres]==${SUPERSET_VERSION}" gunicorn gevent
+    "apache-superset[postgres]==${SUPERSET_VERSION}" gunicorn gevent \
+    pyodbc
 
 # Superset config
 COPY config/superset_config.py /opt/superset/config/superset_config.py
@@ -192,13 +230,19 @@ RUN useradd -m -s /bin/bash ${DEFAULT_USER} \
     && echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${DEFAULT_USER} \
     && chmod 0440 /etc/sudoers.d/${DEFAULT_USER}
 
-# ===== Manifest (for backup scripts) =====
+# ===== Manifest (for backup scripts and mounts) =====
 ARG BACKUP_DIR
+ARG WIN_BASE_DIR
 RUN echo "DISTRO_NAME=wsl-${PROFILE}" > /etc/wsl-manifest \
     && echo "BACKUP_DIR=${BACKUP_DIR}" >> /etc/wsl-manifest \
+    && echo "WIN_BASE_DIR=${WIN_BASE_DIR}" >> /etc/wsl-manifest \
     && echo "PG_PORT=5432" >> /etc/wsl-manifest \
     && echo 'DATABASES="superset metabase affine"' >> /etc/wsl-manifest \
     && echo "RETENTION_DAYS=7" >> /etc/wsl-manifest
+
+# ===== Kerberos environment =====
+ARG WIN_BASE_DIR
+ENV KRB5CCNAME="${WIN_BASE_DIR}/krb5/cache/krb5cc"
 
 # ===== Systemd services =====
 COPY config/systemd/superset-web.service /etc/systemd/system/
@@ -214,6 +258,10 @@ COPY scripts/restore_postgres.sh /usr/local/bin/
 COPY scripts/start-affine.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/*.sh
+
+# ===== Windows mounts setup (symlinks on first login) =====
+COPY scripts/setup-mounts.sh /etc/profile.d/01-mounts.sh
+RUN chmod 644 /etc/profile.d/01-mounts.sh
 
 # ===== Cron for backups =====
 RUN echo "0 3 * * * root /usr/local/bin/backup_postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \

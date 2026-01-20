@@ -1,0 +1,20 @@
+// Corporate Gradle repository configuration
+allprojects {
+    repositories {
+        maven {
+            url 'GRADLE_REPO_URL'
+            allowInsecureProtocol = false
+        }
+    }
+}
+
+settingsEvaluated { settings ->
+    settings.pluginManagement {
+        repositories {
+            maven {
+                url 'GRADLE_REPO_URL'
+                allowInsecureProtocol = false
+            }
+        }
+    }
+}

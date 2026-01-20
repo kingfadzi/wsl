@@ -2,6 +2,11 @@
 # Usage: docker build --build-arg PROFILE=lan $(cat profiles/lan.args | sed 's/^/--build-arg /') .
 
 DNS_SERVERS=10.1.1.1 10.1.1.2
+
+# Package registries (corporate Nexus)
 PYPI_INDEX_URL=https://nexus.corp/pypi/simple
 PYPI_TRUSTED_HOST=nexus.corp
 NPM_REGISTRY=https://nexus.corp/npm
+MAVEN_REPO_URL=https://nexus.corp/maven/public
+GRADLE_REPO_URL=https://nexus.corp/maven/public
+GRADLE_DIST_URL=https://nexus.corp/gradle/distributions

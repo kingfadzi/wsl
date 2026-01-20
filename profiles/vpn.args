@@ -2,7 +2,11 @@
 # Usage: docker build --build-arg PROFILE=vpn $(cat profiles/vpn.args | sed 's/^/--build-arg /') .
 
 DNS_SERVERS=8.8.8.8 8.8.4.4
-# Use public registries (leave empty for defaults)
+
+# Package registries (empty = public defaults)
 PYPI_INDEX_URL=
 PYPI_TRUSTED_HOST=
 NPM_REGISTRY=
+MAVEN_REPO_URL=
+GRADLE_REPO_URL=
+GRADLE_DIST_URL=
