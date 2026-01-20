@@ -31,7 +31,7 @@ RUN dnf install -y --allowerasing \
     sudo passwd cronie gcc gcc-c++ make \
     ca-certificates tar gzip unzip openssl \
     krb5-workstation krb5-devel \
-    unixODBC unixODBC-devel \
+    unixODBC \
     maven \
     && dnf clean all
 
