@@ -30,17 +30,17 @@ echo "Image:   $IMAGE_NAME"
 echo "Output:  $TARBALL"
 echo
 
-# Build args from profile
-BUILD_ARGS="--build-arg PROFILE=$PROFILE"
+# Build args from profile (use array to handle spaces in values)
+BUILD_ARGS=("--build-arg" "PROFILE=$PROFILE")
 while IFS= read -r line; do
     # Skip comments and empty lines
     [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
-    BUILD_ARGS="$BUILD_ARGS --build-arg $line"
+    BUILD_ARGS+=("--build-arg" "$line")
 done < "profiles/${PROFILE}.args"
 
 # Build
 echo "Building image..."
-docker build -t "$IMAGE_NAME" $BUILD_ARGS .
+docker build -t "$IMAGE_NAME" "${BUILD_ARGS[@]}" .
 
 # Export
 echo
