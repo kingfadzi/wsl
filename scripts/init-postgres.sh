@@ -13,8 +13,10 @@ echo "Starting PostgreSQL..."
 echo "PGDATA=$PGDATA"
 ls -la $PGDATA || true
 su - postgres -c "pg_ctl -D $PGDATA -l /var/lib/pgsql/pgstartup.log start" || {
-    echo "pg_ctl failed. Log contents:"
-    cat /var/lib/pgsql/pgstartup.log 2>/dev/null || echo "No log file"
+    echo "pg_ctl failed. Startup log:"
+    cat /var/lib/pgsql/pgstartup.log 2>/dev/null || echo "No startup log"
+    echo "PostgreSQL log directory:"
+    cat $PGDATA/log/*.log 2>/dev/null || echo "No logs in log directory"
     exit 1
 }
 
