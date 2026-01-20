@@ -17,10 +17,12 @@ wsl -d DevEnv
 
 ## Profiles
 
-| Profile | DNS | Registries | Certificates |
-|---------|-----|------------|--------------|
-| `vpn` | Public (8.8.8.8) | Public | Zscaler + Corp CA |
-| `lan` | Corporate | Nexus | Corp CA only |
+| Profile | DNS | Registries |
+|---------|-----|------------|
+| `vpn` | Public (8.8.8.8) | Public |
+| `lan` | Corporate | Nexus |
+
+Certificates are loaded at runtime from Windows mount (see [Certificates](#certificates)).
 
 Edit `profiles/vpn.args` or `profiles/lan.args` to customize.
 
