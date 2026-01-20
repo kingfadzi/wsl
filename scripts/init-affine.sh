@@ -5,9 +5,8 @@ set -e
 
 echo "=== Initializing AFFiNE ==="
 
-# PGDG paths
-export PATH=/usr/pgsql-15/bin:$PATH
-PGDATA=/var/lib/pgsql/15/data
+# AppStream PostgreSQL paths
+PGDATA=/var/lib/pgsql/data
 
 cd /opt/affine
 
@@ -21,7 +20,7 @@ export REDIS_SERVER_HOST="localhost"
 
 # Start PostgreSQL (without -w, then wait manually)
 echo "Starting PostgreSQL..."
-su - postgres -c "/usr/pgsql-15/bin/pg_ctl -D $PGDATA -l /var/lib/pgsql/15/pgstartup.log start"
+su - postgres -c "pg_ctl -D $PGDATA -l /var/lib/pgsql/pgstartup.log start"
 
 # Start Redis
 redis-server --daemonize yes
@@ -29,13 +28,13 @@ redis-server --daemonize yes
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
 for i in {1..60}; do
-    if su - postgres -c "/usr/pgsql-15/bin/psql -c 'SELECT 1'" &>/dev/null; then
+    if su - postgres -c "psql -c 'SELECT 1'" &>/dev/null; then
         echo "PostgreSQL is ready"
         break
     fi
     if [ $i -eq 60 ]; then
         echo "PostgreSQL failed to start. Log:"
-        cat /var/lib/pgsql/15/pgstartup.log || true
+        cat /var/lib/pgsql/pgstartup.log || true
         exit 1
     fi
     sleep 1
@@ -55,6 +54,6 @@ fi
 
 # Stop services
 redis-cli shutdown || true
-su - postgres -c "/usr/pgsql-15/bin/pg_ctl -D $PGDATA stop -m fast" || true
+su - postgres -c "pg_ctl -D $PGDATA stop -m fast" || true
 
 echo "=== AFFiNE initialization complete ==="

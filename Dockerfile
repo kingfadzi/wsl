@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi:latest
+FROM almalinux:9
 
 # ===== Build args =====
 ARG PROFILE=vpn
@@ -17,7 +17,7 @@ ARG MAVEN_REPO_URL=
 ARG BACKUP_DIR=/mnt/f/backups/postgresql
 
 # ===== Base packages =====
-RUN dnf install -y --allowerasing \
+RUN dnf install -y \
     git vim curl wget jq hostname bind-utils \
     iputils net-tools procps-ng findutils \
     sudo passwd cronie gcc gcc-c++ make \
@@ -114,19 +114,15 @@ RUN if ls /tmp/certs/*.cacerts 2>/dev/null; then \
 ARG NPM_REGISTRY
 RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
 
-# ===== PostgreSQL (from official PGDG repo - not in UBI9 AppStream) =====
-# Cache bust: v2
-RUN dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
-    && dnf install -y postgresql15-server postgresql15-contrib \
+# ===== PostgreSQL (from AppStream module) =====
+RUN dnf module enable -y postgresql:15 \
+    && dnf install -y postgresql-server postgresql-contrib \
     && dnf clean all
 
-# Create symlinks for convenience
-RUN ln -sf /usr/pgsql-15/bin/* /usr/local/bin/
-
-# Initialize PostgreSQL data directory (PGDG uses versioned paths)
-ENV PGDATA=/var/lib/pgsql/15/data
+# Initialize PostgreSQL data directory
+ENV PGDATA=/var/lib/pgsql/data
 RUN mkdir -p $PGDATA && chown postgres:postgres $PGDATA && \
-    su - postgres -c "/usr/pgsql-15/bin/initdb -D $PGDATA"
+    su - postgres -c "initdb -D $PGDATA"
 
 # Configure pg_hba.conf for peer auth (local) + md5 (network)
 RUN sed -i 's/^\(local.*\)ident$/\1peer/' $PGDATA/pg_hba.conf \
@@ -226,7 +222,7 @@ RUN echo "0 3 * * * root /usr/local/bin/backup_postgres.sh --all --yes" > /etc/c
 # ===== Enable services for systemd =====
 # Can't use systemctl in Docker build, so create symlinks directly
 RUN mkdir -p /etc/systemd/system/multi-user.target.wants && \
-    ln -sf /usr/lib/systemd/system/postgresql-15.service /etc/systemd/system/multi-user.target.wants/ && \
+    ln -sf /usr/lib/systemd/system/postgresql.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /usr/lib/systemd/system/redis.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /usr/lib/systemd/system/crond.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /etc/systemd/system/superset-web.service /etc/systemd/system/multi-user.target.wants/ && \
