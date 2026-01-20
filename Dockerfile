@@ -55,41 +55,6 @@ RUN for dns in ${DNS_SERVERS}; do echo "nameserver $dns" >> /etc/resolv.conf.wsl
     echo 'fi' >> /etc/profile.d/00-dns.sh && \
     chmod 644 /etc/profile.d/00-dns.sh
 
-# ===== CA Certificates (System) =====
-# Three types of certs:
-#   1. Corporate CA bundle (certs/*.pem) - copied directly to system trust
-#   2. Zscaler certs (certs/*.cer) - converted from DER/PEM, combined into bundle
-#   3. Java cacerts (certs/*.cacerts) - replaces Java trust store (handled after Java install)
-COPY certs/ /tmp/certs/
-ARG PROFILE
-RUN CERTS_INSTALLED=0; \
-    # Install corporate CA bundle files (always, both profiles) \
-    if ls /tmp/certs/*.pem 2>/dev/null; then \
-      for bundle in /tmp/certs/*.pem; do \
-        echo "Installing CA bundle: $bundle"; \
-        cp "$bundle" /etc/pki/ca-trust/source/anchors/; \
-        CERTS_INSTALLED=1; \
-      done; \
-    fi; \
-    # Install Zscaler certs (vpn profile only) \
-    if [ "$PROFILE" = "vpn" ] && ls /tmp/certs/*.cer 2>/dev/null; then \
-      BUNDLE="/etc/pki/ca-trust/source/anchors/zscaler-bundle.pem"; \
-      : > "$BUNDLE"; \
-      for cert in /tmp/certs/*.cer; do \
-        echo "Converting Zscaler cert: $cert"; \
-        openssl x509 -inform DER -in "$cert" >> "$BUNDLE" 2>/dev/null || \
-        openssl x509 -in "$cert" >> "$BUNDLE"; \
-        echo "" >> "$BUNDLE"; \
-      done; \
-      echo "Created Zscaler bundle with $(grep -c 'BEGIN CERTIFICATE' "$BUNDLE") certificate(s)"; \
-      CERTS_INSTALLED=1; \
-    fi; \
-    # Update trust store if any certs installed \
-    if [ "$CERTS_INSTALLED" = "1" ]; then \
-      update-ca-trust extract; \
-      echo "CA certificates installed into system trust store"; \
-    fi
-
 # ===== Proxy passthrough script (reads Windows env vars at login) =====
 COPY scripts/profile.d/proxy.sh /etc/profile.d/proxy.sh
 RUN chmod 644 /etc/profile.d/proxy.sh
@@ -117,18 +82,6 @@ RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
 
 # Install yarn (needed for AFFiNE)
 RUN npm install -g yarn
-
-# ===== Java cacerts (install org trust store after Java is available) =====
-RUN if ls /tmp/certs/*.cacerts 2>/dev/null; then \
-      JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))); \
-      CACERTS_DST="$JAVA_HOME/lib/security/cacerts"; \
-      for cacerts in /tmp/certs/*.cacerts; do \
-        echo "Installing Java cacerts: $cacerts -> $CACERTS_DST"; \
-        cp "$cacerts" "$CACERTS_DST"; \
-        chmod 644 "$CACERTS_DST"; \
-      done; \
-    fi; \
-    rm -rf /tmp/certs
 
 # ===== Gradle =====
 ARG GRADLE_VERSION

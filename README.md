@@ -86,15 +86,7 @@ journalctl -u superset-web -f
 
 ## Certificates
 
-**Option 1: Build-time** - Place in `certs/` before building:
-
-| Type | Files | Profiles |
-|------|-------|----------|
-| Corporate CA | `*.pem` | Both |
-| Zscaler | `*.cer` | vpn only |
-| Java keystore | `*.cacerts` | Both |
-
-**Option 2: Runtime** - Place in Windows mount for auto-update on login:
+Certificates are loaded from Windows mount on login:
 
 ```
 C:\devhome\projects\wsl\certs\
