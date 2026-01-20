@@ -53,6 +53,7 @@ Config files are stored on Windows and symlinked into WSL on first login:
 | `/etc/odbc.ini` | `C:\devhome\projects\wsl\odbc\odbc.ini` |
 | `/etc/odbcinst.ini` | `C:\devhome\projects\wsl\odbc\odbcinst.ini` |
 | `/opt/wsl-certs` | `C:\devhome\projects\wsl\certs\` |
+| `/opt/wsl-secrets` | `C:\devhome\projects\wsl\secrets\` |
 | `~/.ssh/` | `C:\devhome\projects\wsl\ssh\` |
 | `~/.claude/` | `C:\devhome\projects\wsl\claude\` |
 | `~/Downloads` | `C:\Users\{username}\Downloads\` |
@@ -64,6 +65,7 @@ mkdir C:\devhome\projects\wsl\krb5
 mkdir C:\devhome\projects\wsl\odbc
 mkdir C:\devhome\projects\wsl\certs\ca
 mkdir C:\devhome\projects\wsl\certs\java
+mkdir C:\devhome\projects\wsl\secrets
 mkdir C:\devhome\projects\wsl\ssh
 mkdir C:\devhome\projects\wsl\claude
 ```
@@ -98,6 +100,31 @@ C:\devhome\projects\wsl\certs\
 ```
 
 Drop any `.pem`, `.crt`, or `.cer` into `ca\` and it will be installed on next login.
+
+## API Keys
+
+API keys are loaded from Windows mount on login as environment variables.
+
+Create `C:\devhome\projects\wsl\secrets\api-keys.env`:
+
+```bash
+# Jira
+JIRA_API_TOKEN=your-token
+
+# GitLab
+GITLAB_TOKEN=your-token
+
+# SonarQube
+SONAR_TOKEN=your-token
+
+# Confluence
+CONFLUENCE_API_TOKEN=your-token
+
+# Claude Code
+ANTHROPIC_API_KEY=your-key
+```
+
+All keys are exported automatically on login. Verify with `echo $ANTHROPIC_API_KEY`.
 
 ## Backup & Restore
 

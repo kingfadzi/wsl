@@ -60,6 +60,9 @@ create_mount_sudo "/etc/odbcinst.ini" "${WIN_BASE_DIR}/odbc/odbcinst.ini"
 # Certificates directory (system-wide)
 create_mount_sudo "/opt/wsl-certs" "${WIN_BASE_DIR}/certs"
 
+# Secrets directory (API keys)
+create_mount_sudo "/opt/wsl-secrets" "${WIN_BASE_DIR}/secrets"
+
 # User home symlinks
 create_mount "$HOME/.ssh" "${WIN_BASE_DIR}/ssh"
 create_mount "$HOME/.claude" "${WIN_BASE_DIR}/claude"

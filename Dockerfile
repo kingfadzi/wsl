@@ -221,7 +221,8 @@ RUN chmod +x /usr/local/bin/*.sh
 COPY scripts/profile.d/mounts.sh /etc/profile.d/01-mounts.sh
 COPY scripts/profile.d/certs.sh /etc/profile.d/02-certs.sh
 COPY scripts/profile.d/homedir.sh /etc/profile.d/03-homedir.sh
-RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh
+COPY scripts/profile.d/secrets.sh /etc/profile.d/04-secrets.sh
+RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh /etc/profile.d/04-secrets.sh
 
 # ===== Cron for backups =====
 RUN echo "0 3 * * * root /usr/local/bin/backup-postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \
