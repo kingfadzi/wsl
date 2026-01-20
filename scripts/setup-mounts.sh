@@ -51,6 +51,10 @@ create_mount_sudo() {
 # Kerberos config (system-wide)
 create_mount_sudo "/etc/krb5.conf" "${WIN_BASE_DIR}/krb5/krb5.conf"
 
+# ODBC config (system-wide)
+create_mount_sudo "/etc/odbc.ini" "${WIN_BASE_DIR}/odbc/odbc.ini"
+create_mount_sudo "/etc/odbcinst.ini" "${WIN_BASE_DIR}/odbc/odbcinst.ini"
+
 # User home symlinks
 create_mount "$HOME/.ssh" "${WIN_BASE_DIR}/ssh"
 create_mount "$HOME/.claude" "${WIN_BASE_DIR}/claude"

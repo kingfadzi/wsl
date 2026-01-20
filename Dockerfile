@@ -20,18 +20,23 @@ ARG GRADLE_DIST_URL=
 ARG WIN_BASE_DIR=/mnt/c/devhome/projects/wsl
 ARG BACKUP_DIR=/mnt/f/backups/postgresql
 
+# ===== Enable CRB repo for -devel packages (no-op if unavailable in prod) =====
+RUN dnf install -y 'dnf-command(config-manager)' && \
+    dnf config-manager --set-enabled crb || true
+
 # ===== Base packages =====
 RUN dnf install -y --allowerasing \
     git vim curl wget jq hostname bind-utils \
     iputils net-tools procps-ng findutils \
     sudo passwd cronie gcc gcc-c++ make \
-    ca-certificates tar gzip openssl \
+    ca-certificates tar gzip unzip openssl \
     krb5-workstation krb5-devel \
     unixODBC unixODBC-devel \
     maven \
     && dnf clean all
 
-# ===== SQL Server ODBC driver (from corp repos) =====
+# ===== SQL Server ODBC driver =====
+RUN curl -fL# https://packages.microsoft.com/config/rhel/9/prod.repo > /etc/yum.repos.d/mssql-release.repo || true
 RUN ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 && dnf clean all
 ENV PATH="$PATH:/opt/mssql-tools18/bin"
 
@@ -129,7 +134,7 @@ RUN if ls /tmp/certs/*.cacerts 2>/dev/null; then \
 ARG GRADLE_VERSION
 ARG GRADLE_DIST_URL
 RUN GRADLE_URL="${GRADLE_DIST_URL:-https://services.gradle.org/distributions}/gradle-${GRADLE_VERSION}-bin.zip" && \
-    curl -fsSL "$GRADLE_URL" -o /tmp/gradle.zip && \
+    curl -fL# "$GRADLE_URL" -o /tmp/gradle.zip && \
     unzip -q /tmp/gradle.zip -d /opt && \
     mv /opt/gradle-${GRADLE_VERSION} /opt/gradle && \
     rm /tmp/gradle.zip
@@ -207,13 +212,13 @@ RUN chmod +x /tmp/init-superset.sh && /tmp/init-superset.sh && rm /tmp/init-supe
 # ===== Metabase =====
 ARG METABASE_VERSION
 RUN mkdir -p /opt/metabase \
-    && curl -fsSL -o /opt/metabase/metabase.jar \
+    && curl -fL# -o /opt/metabase/metabase.jar \
        "https://downloads.metabase.com/v${METABASE_VERSION}/metabase.jar"
 
 # ===== AFFiNE =====
 ARG AFFINE_VERSION
 RUN mkdir -p /opt/affine \
-    && curl -fsSL "https://github.com/kingfadzi/AFFiNE/releases/download/v${AFFINE_VERSION}/affine-${AFFINE_VERSION}-linux-x64.tar.gz" \
+    && curl -fL# "https://github.com/kingfadzi/AFFiNE/releases/download/v${AFFINE_VERSION}/affine-${AFFINE_VERSION}-linux-x64.tar.gz" \
     | tar -xzf - -C /opt/affine
 
 # Run AFFiNE install.sh (migrations, admin user)
