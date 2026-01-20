@@ -1,0 +1,24 @@
+[Unit]
+Description=Metabase Business Intelligence
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="MB_DB_TYPE=postgres"
+Environment="MB_DB_DBNAME=metabase"
+Environment="MB_DB_PORT=5432"
+Environment="MB_DB_USER=metabase"
+Environment="MB_DB_PASS=metabase"
+Environment="MB_DB_HOST=localhost"
+Environment="MB_JETTY_PORT=3000"
+Environment="MB_JETTY_HOST=0.0.0.0"
+WorkingDirectory=/opt/metabase
+ExecStart=/usr/bin/java -jar /opt/metabase/metabase.jar
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

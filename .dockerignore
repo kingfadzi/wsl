@@ -1,0 +1,40 @@
+# Python virtual environments
+setup/.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Old installation files (to be deleted)
+setup/
+install/
+
+# Documentation that's not needed in image
+*.md
+!README.md
+
+# Claude config
+.claude/
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tar
+*.tar.gz
+wsl-*.tar

@@ -1,0 +1,16 @@
+# CA Certificates Directory
+#
+# Place certificates here before building:
+#
+# 1. Corporate CA bundle (*.pem) - installed for BOTH profiles
+#    Example: corp-ca-bundle.pem
+#    Copied directly to /etc/pki/ca-trust/source/anchors/
+#
+# 2. Zscaler certificates (*.cer) - installed for VPN profile only
+#    Example: zscaler-root.cer, zscaler-intermediate.cer
+#    Converted from DER/PEM format and combined into
+#    /etc/pki/ca-trust/source/anchors/zscaler-bundle.pem
+#
+# 3. Java trust store (*.cacerts) - installed for BOTH profiles
+#    Example: corp-java.cacerts
+#    Replaces $JAVA_HOME/lib/security/cacerts

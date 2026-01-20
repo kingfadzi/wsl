@@ -1,0 +1,22 @@
+[Unit]
+Description=Apache Superset Celery Worker
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="SUPERSET_CONFIG_PATH=/opt/superset/config/superset_config.py"
+WorkingDirectory=/opt/superset
+ExecStart=/opt/superset/venv/bin/celery \
+    --app=superset.tasks.celery_app:app \
+    worker \
+    --loglevel=INFO \
+    --pool=prefork \
+    --concurrency=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
