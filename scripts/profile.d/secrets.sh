@@ -4,7 +4,7 @@
 
 [[ $- != *i* ]] && return
 
-SECRETS_FILE="/opt/wsl-secrets/api-keys.env"
+SECRETS_FILE="/opt/wsl-secrets/profile.env"
 
 if [ -f "$SECRETS_FILE" ]; then
     set -a

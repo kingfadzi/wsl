@@ -101,11 +101,11 @@ C:\devhome\projects\wsl\certs\
 
 Drop any `.pem`, `.crt`, or `.cer` into `ca\` and it will be installed on next login.
 
-## API Keys
+## Environment Variables
 
-API keys are loaded from Windows mount on login as environment variables.
+Environment variables are loaded from Windows mount on login.
 
-Create `C:\devhome\projects\wsl\secrets\api-keys.env`:
+Create `C:\devhome\projects\wsl\secrets\profile.env`:
 
 ```bash
 # Jira
@@ -124,7 +124,7 @@ CONFLUENCE_API_TOKEN=your-token
 ANTHROPIC_API_KEY=your-key
 ```
 
-All keys are exported automatically on login. Verify with `echo $ANTHROPIC_API_KEY`.
+All variables are exported automatically on login. Verify with `env | grep YOUR_VAR`.
 
 ## Backup & Restore
 
