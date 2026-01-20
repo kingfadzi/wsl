@@ -76,38 +76,49 @@ RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERS
     && alternatives --install /usr/bin/pip pip /usr/bin/pip${PYTHON_VERSION} 1 \
     && alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip${PYTHON_VERSION} 1
 
-# ===== Package registries (configure before installing packages) =====
+# ===== Package registries (mandatory - supply chain security) =====
+# All package managers must use internal repos. Public repos are explicit exceptions only.
+
+# pip (system-wide) - internal PyPI required
+ARG PYPI_INDEX_URL
+ARG PYPI_TRUSTED_HOST
+RUN mkdir -p /etc && \
+    echo "[global]" > /etc/pip.conf && \
+    echo "index-url = ${PYPI_INDEX_URL}" >> /etc/pip.conf && \
+    echo "trusted-host = ${PYPI_TRUSTED_HOST}" >> /etc/pip.conf
+
+# npm/yarn (system-wide) - internal registry required
 ARG NPM_REGISTRY
-RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
+RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc
 
 # Install yarn (needed for AFFiNE)
 RUN npm install -g yarn
 
-# ===== Gradle =====
+# ===== Gradle binary (internal distribution required) =====
 ARG GRADLE_VERSION
 ARG GRADLE_DIST_URL
-RUN GRADLE_URL="${GRADLE_DIST_URL:-https://services.gradle.org/distributions}/gradle-${GRADLE_VERSION}-bin.zip" && \
-    curl -fL# "$GRADLE_URL" -o /tmp/gradle.zip && \
+RUN if [ -z "$GRADLE_DIST_URL" ]; then echo "ERROR: GRADLE_DIST_URL required (no public fallback)" && exit 1; fi && \
+    curl -fL# "${GRADLE_DIST_URL}/gradle-${GRADLE_VERSION}-bin.zip" -o /tmp/gradle.zip && \
     unzip -q /tmp/gradle.zip -d /opt && \
     mv /opt/gradle-${GRADLE_VERSION} /opt/gradle && \
     rm /tmp/gradle.zip
 ENV PATH="$PATH:/opt/gradle/bin"
 
-# ===== Maven settings (corporate mirror) =====
+# ===== Maven settings (internal mirror required) =====
 ARG MAVEN_REPO_URL
 COPY config/maven-settings.xml /tmp/maven-settings.xml
-RUN if [ -n "$MAVEN_REPO_URL" ]; then \
-      mkdir -p /etc/skel/.m2 && \
-      sed "s|MAVEN_REPO_URL|$MAVEN_REPO_URL|g" /tmp/maven-settings.xml > /etc/skel/.m2/settings.xml; \
-    fi && rm -f /tmp/maven-settings.xml
+RUN if [ -z "$MAVEN_REPO_URL" ]; then echo "ERROR: MAVEN_REPO_URL required (no public fallback)" && exit 1; fi && \
+    mkdir -p /etc/skel/.m2 && \
+    sed "s|MAVEN_REPO_URL|$MAVEN_REPO_URL|g" /tmp/maven-settings.xml > /etc/skel/.m2/settings.xml && \
+    rm -f /tmp/maven-settings.xml
 
-# ===== Gradle init (corporate mirror) =====
+# ===== Gradle init (internal mirror required) =====
 ARG GRADLE_REPO_URL
 COPY config/gradle-init.gradle /tmp/gradle-init.gradle
-RUN if [ -n "$GRADLE_REPO_URL" ]; then \
-      mkdir -p /etc/skel/.gradle && \
-      sed "s|GRADLE_REPO_URL|$GRADLE_REPO_URL|g" /tmp/gradle-init.gradle > /etc/skel/.gradle/init.gradle; \
-    fi && rm -f /tmp/gradle-init.gradle
+RUN if [ -z "$GRADLE_REPO_URL" ]; then echo "ERROR: GRADLE_REPO_URL required (no public fallback)" && exit 1; fi && \
+    mkdir -p /etc/skel/.gradle && \
+    sed "s|GRADLE_REPO_URL|$GRADLE_REPO_URL|g" /tmp/gradle-init.gradle > /etc/skel/.gradle/init.gradle && \
+    rm -f /tmp/gradle-init.gradle
 
 # ===== PostgreSQL (from AppStream module) =====
 RUN dnf module enable -y postgresql:15 \
@@ -137,14 +148,13 @@ RUN chmod +x /tmp/init-postgres.sh && /tmp/init-postgres.sh && rm /tmp/init-post
 # ===== Superset =====
 RUN python3 -m venv /opt/superset/venv
 
-# Configure pip: internal PyPI (if provided) with public fallback
+# EXCEPTION: Superset venv uses public PyPI as fallback for open-source packages
+# This is intentional - apache-superset and dependencies are only on public PyPI
 ARG PYPI_INDEX_URL
 ARG PYPI_TRUSTED_HOST
-RUN if [ -n "$PYPI_INDEX_URL" ]; then \
-      /opt/superset/venv/bin/pip config set global.index-url "$PYPI_INDEX_URL"; \
-      /opt/superset/venv/bin/pip config set global.trusted-host "$PYPI_TRUSTED_HOST"; \
-      /opt/superset/venv/bin/pip config set global.extra-index-url "https://pypi.org/simple"; \
-    fi
+RUN /opt/superset/venv/bin/pip config set global.index-url "$PYPI_INDEX_URL" && \
+    /opt/superset/venv/bin/pip config set global.trusted-host "$PYPI_TRUSTED_HOST" && \
+    /opt/superset/venv/bin/pip config set global.extra-index-url "https://pypi.org/simple"
 
 RUN /opt/superset/venv/bin/pip install --upgrade pip setuptools wheel
 

@@ -37,11 +37,12 @@ Edit `profiles/vpn.args` or `profiles/lan.args` to customize.
 | `NODE_VERSION` | `22` | Node.js version |
 | `JAVA_VERSION` | `21` | Java version |
 | `GRADLE_VERSION` | `8.5` | Gradle version |
-| `PYPI_INDEX_URL` | | Corporate PyPI mirror |
-| `NPM_REGISTRY` | | Corporate npm registry |
-| `MAVEN_REPO_URL` | | Corporate Maven mirror |
-| `GRADLE_REPO_URL` | | Corporate Gradle mirror |
-| `GRADLE_DIST_URL` | | Gradle distribution URL |
+| `PYPI_INDEX_URL` | **required** | PyPI mirror URL |
+| `PYPI_TRUSTED_HOST` | **required** | PyPI trusted host |
+| `NPM_REGISTRY` | **required** | npm registry URL |
+| `MAVEN_REPO_URL` | **required** | Maven mirror URL |
+| `GRADLE_REPO_URL` | **required** | Gradle mirror URL |
+| `GRADLE_DIST_URL` | **required** | Gradle distribution URL |
 | `WIN_BASE_DIR` | `/mnt/c/devhome/projects/wsl` | Windows config folder |
 | `BACKUP_DIR` | `/mnt/f/backups/postgresql` | Backup location |
 
