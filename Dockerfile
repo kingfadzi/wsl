@@ -95,6 +95,10 @@ RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERS
     && alternatives --install /usr/bin/pip pip /usr/bin/pip${PYTHON_VERSION} 1 \
     && alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip${PYTHON_VERSION} 1
 
+# ===== Package registries (configure before installing packages) =====
+ARG NPM_REGISTRY
+RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
+
 # Install yarn (needed for AFFiNE)
 RUN npm install -g yarn
 
@@ -109,10 +113,6 @@ RUN if ls /tmp/certs/*.cacerts 2>/dev/null; then \
       done; \
     fi; \
     rm -rf /tmp/certs
-
-# ===== Package registries (npm only - pip configured per-venv) =====
-ARG NPM_REGISTRY
-RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi
 
 # ===== PostgreSQL (from AppStream module) =====
 RUN dnf module enable -y postgresql:15 \
