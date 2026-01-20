@@ -37,7 +37,9 @@ RUN dnf install -y --allowerasing \
 
 # ===== SQL Server ODBC driver =====
 RUN curl -fL# https://packages.microsoft.com/config/rhel/9/prod.repo > /etc/yum.repos.d/mssql-release.repo || true
-RUN ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 && dnf clean all
+RUN ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 && \
+    rm -f /etc/yum.repos.d/mssql-release.repo && \
+    dnf clean all
 ENV PATH="$PATH:/opt/mssql-tools18/bin"
 
 # ===== WSL config =====
@@ -49,10 +51,8 @@ COPY config/wsl.conf /etc/wsl.conf
 ARG DNS_SERVERS
 RUN for dns in ${DNS_SERVERS}; do echo "nameserver $dns" >> /etc/resolv.conf.wsl; done && \
     echo '#!/bin/bash' > /etc/profile.d/00-dns.sh && \
-    echo '# Copy baked DNS config on first boot (wsl.conf has generateResolvConf=false)' >> /etc/profile.d/00-dns.sh && \
-    echo 'if [ -f /etc/resolv.conf.wsl ] && ! grep -q "^nameserver" /etc/resolv.conf 2>/dev/null; then' >> /etc/profile.d/00-dns.sh && \
-    echo '  sudo cp /etc/resolv.conf.wsl /etc/resolv.conf 2>/dev/null || true' >> /etc/profile.d/00-dns.sh && \
-    echo 'fi' >> /etc/profile.d/00-dns.sh && \
+    echo '# Copy baked DNS config (wsl.conf has generateResolvConf=false)' >> /etc/profile.d/00-dns.sh && \
+    echo '[ -f /etc/resolv.conf.wsl ] && sudo cp -f /etc/resolv.conf.wsl /etc/resolv.conf 2>/dev/null' >> /etc/profile.d/00-dns.sh && \
     chmod 644 /etc/profile.d/00-dns.sh
 
 # ===== Proxy passthrough script (reads Windows env vars at login) =====
@@ -220,7 +220,8 @@ RUN chmod +x /usr/local/bin/*.sh
 # ===== Windows mounts setup (symlinks on first login) =====
 COPY scripts/profile.d/mounts.sh /etc/profile.d/01-mounts.sh
 COPY scripts/profile.d/certs.sh /etc/profile.d/02-certs.sh
-RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh
+COPY scripts/profile.d/homedir.sh /etc/profile.d/03-homedir.sh
+RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh
 
 # ===== Cron for backups =====
 RUN echo "0 3 * * * root /usr/local/bin/backup-postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \
