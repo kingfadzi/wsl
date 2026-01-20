@@ -10,7 +10,13 @@ PGDATA=/var/lib/pgsql/data
 
 # Start PostgreSQL (without -w, then wait manually)
 echo "Starting PostgreSQL..."
-su - postgres -c "pg_ctl -D $PGDATA -l /var/lib/pgsql/pgstartup.log start"
+echo "PGDATA=$PGDATA"
+ls -la $PGDATA || true
+su - postgres -c "pg_ctl -D $PGDATA -l /var/lib/pgsql/pgstartup.log start" || {
+    echo "pg_ctl failed. Log contents:"
+    cat /var/lib/pgsql/pgstartup.log 2>/dev/null || echo "No log file"
+    exit 1
+}
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
