@@ -18,6 +18,10 @@ export DATABASE_URL="postgres://affine:affine@localhost:5432/affine"
 export POSTGRES_HOST="localhost"
 export REDIS_SERVER_HOST="localhost"
 
+# Create runtime directory for Unix socket
+mkdir -p /var/run/postgresql
+chown postgres:postgres /var/run/postgresql
+
 # Start PostgreSQL (without -w, then wait manually)
 echo "Starting PostgreSQL..."
 su - postgres -c "pg_ctl -D $PGDATA -l /var/lib/pgsql/pgstartup.log start"

@@ -8,10 +8,12 @@ echo "=== Initializing PostgreSQL databases ==="
 # AppStream PostgreSQL paths
 PGDATA=/var/lib/pgsql/data
 
+# Create runtime directory for Unix socket
+mkdir -p /var/run/postgresql
+chown postgres:postgres /var/run/postgresql
+
 # Start PostgreSQL (without -w, then wait manually)
 echo "Starting PostgreSQL..."
-echo "PGDATA=$PGDATA"
-ls -la $PGDATA || true
 su - postgres -c "pg_ctl -D $PGDATA -l /var/lib/pgsql/pgstartup.log start" || {
     echo "pg_ctl failed. Startup log:"
     cat /var/lib/pgsql/pgstartup.log 2>/dev/null || echo "No startup log"
