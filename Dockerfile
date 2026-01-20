@@ -49,7 +49,7 @@ COPY config/wsl.conf /etc/wsl.conf
 # Docker mounts /etc/resolv.conf during build, so we write to a staging file
 # and copy it on first boot via profile.d script
 ARG DNS_SERVERS
-RUN for dns in ${DNS_SERVERS}; do echo "nameserver $dns" >> /etc/resolv.conf.wsl; done && \
+RUN for dns in ${DNS_SERVERS}; do echo "nameserver $dns" | tr -d '\r' >> /etc/resolv.conf.wsl; done && \
     echo '#!/bin/bash' > /etc/profile.d/00-dns.sh && \
     echo '# Copy baked DNS config (wsl.conf has generateResolvConf=false)' >> /etc/profile.d/00-dns.sh && \
     echo '[ -f /etc/resolv.conf.wsl ] && sudo cp -f /etc/resolv.conf.wsl /etc/resolv.conf 2>/dev/null' >> /etc/profile.d/00-dns.sh && \
