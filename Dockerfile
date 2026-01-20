@@ -17,7 +17,7 @@ ARG MAVEN_REPO_URL=
 ARG BACKUP_DIR=/mnt/f/backups/postgresql
 
 # ===== Base packages =====
-RUN dnf install -y \
+RUN dnf install -y --allowerasing \
     git vim curl wget jq hostname bind-utils \
     iputils net-tools procps-ng findutils \
     sudo passwd cronie gcc gcc-c++ make \
