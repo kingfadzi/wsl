@@ -58,6 +58,10 @@ Config files are stored on Windows and symlinked into WSL on first login:
 | `/opt/wsl-secrets` | `C:\devhome\projects\wsl\secrets\` |
 | `~/.ssh/` | `C:\devhome\projects\wsl\ssh\` |
 | `~/.claude/` | `C:\devhome\projects\wsl\claude\` |
+| `~/.m2/` | `C:\devhome\projects\wsl\m2\` |
+| `~/.gradle/` | `C:\devhome\projects\wsl\gradle\` |
+| `~/.npm/` | `C:\devhome\projects\wsl\npm\` |
+| `~/.cache/pip/` | `C:\devhome\projects\wsl\pip-cache\` |
 | `~/Downloads` | `C:\Users\{username}\Downloads\` |
 | `~/f` | `F:\` |
 
@@ -70,6 +74,10 @@ mkdir C:\devhome\projects\wsl\certs\java
 mkdir C:\devhome\projects\wsl\secrets
 mkdir C:\devhome\projects\wsl\ssh
 mkdir C:\devhome\projects\wsl\claude
+mkdir C:\devhome\projects\wsl\m2
+mkdir C:\devhome\projects\wsl\gradle
+mkdir C:\devhome\projects\wsl\npm
+mkdir C:\devhome\projects\wsl\pip-cache
 ```
 
 ## Applications

@@ -69,6 +69,12 @@ create_mount "$HOME/.claude" "${WIN_BASE_DIR}/claude"
 create_mount "$HOME/Downloads" "/mnt/c/Users/${WIN_USER}/Downloads"
 create_mount "$HOME/f" "/mnt/f"
 
+# Package manager caches (avoid WSL bloat)
+create_mount "$HOME/.m2" "${WIN_BASE_DIR}/m2"
+create_mount "$HOME/.gradle" "${WIN_BASE_DIR}/gradle"
+create_mount "$HOME/.npm" "${WIN_BASE_DIR}/npm"
+create_mount "$HOME/.cache/pip" "${WIN_BASE_DIR}/pip-cache"
+
 # Fix SSH permissions (required for SSH to work)
 if [ -L "$HOME/.ssh" ] && [ -d "$HOME/.ssh" ]; then
     chmod 700 "$HOME/.ssh" 2>/dev/null
