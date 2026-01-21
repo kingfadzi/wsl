@@ -76,10 +76,9 @@ RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERS
     && alternatives --install /usr/bin/pip pip /usr/bin/pip${PYTHON_VERSION} 1 \
     && alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip${PYTHON_VERSION} 1
 
-# ===== Package registries (mandatory - supply chain security) =====
-# All package managers must use internal repos. Public repos are explicit exceptions only.
+# ===== Package registries =====
 
-# pip (system-wide) - internal PyPI required
+# pip (system-wide)
 ARG PYPI_INDEX_URL
 ARG PYPI_TRUSTED_HOST
 RUN mkdir -p /etc && \
@@ -87,35 +86,35 @@ RUN mkdir -p /etc && \
     echo "index-url = ${PYPI_INDEX_URL}" >> /etc/pip.conf && \
     echo "trusted-host = ${PYPI_TRUSTED_HOST}" >> /etc/pip.conf
 
-# npm/yarn (system-wide) - internal registry required
+# npm/yarn (system-wide)
 ARG NPM_REGISTRY
 RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc
 
 # Install yarn (needed for AFFiNE)
 RUN npm install -g yarn
 
-# ===== Gradle binary (internal distribution required) =====
+# ===== Gradle binary =====
 ARG GRADLE_VERSION
 ARG GRADLE_DIST_URL
-RUN if [ -z "$GRADLE_DIST_URL" ]; then echo "ERROR: GRADLE_DIST_URL required (no public fallback)" && exit 1; fi && \
+RUN if [ -z "$GRADLE_DIST_URL" ]; then echo "ERROR: GRADLE_DIST_URL required" && exit 1; fi && \
     curl -fL# "${GRADLE_DIST_URL}/gradle-${GRADLE_VERSION}-bin.zip" -o /tmp/gradle.zip && \
     unzip -q /tmp/gradle.zip -d /opt && \
     mv /opt/gradle-${GRADLE_VERSION} /opt/gradle && \
     rm /tmp/gradle.zip
 ENV PATH="$PATH:/opt/gradle/bin"
 
-# ===== Maven settings (internal mirror required) =====
+# ===== Maven settings =====
 ARG MAVEN_REPO_URL
 COPY config/maven-settings.xml /tmp/maven-settings.xml
-RUN if [ -z "$MAVEN_REPO_URL" ]; then echo "ERROR: MAVEN_REPO_URL required (no public fallback)" && exit 1; fi && \
+RUN if [ -z "$MAVEN_REPO_URL" ]; then echo "ERROR: MAVEN_REPO_URL required" && exit 1; fi && \
     mkdir -p /etc/skel/.m2 && \
     sed "s|MAVEN_REPO_URL|$MAVEN_REPO_URL|g" /tmp/maven-settings.xml > /etc/skel/.m2/settings.xml && \
     rm -f /tmp/maven-settings.xml
 
-# ===== Gradle init (internal mirror required) =====
+# ===== Gradle init =====
 ARG GRADLE_REPO_URL
 COPY config/gradle-init.gradle /tmp/gradle-init.gradle
-RUN if [ -z "$GRADLE_REPO_URL" ]; then echo "ERROR: GRADLE_REPO_URL required (no public fallback)" && exit 1; fi && \
+RUN if [ -z "$GRADLE_REPO_URL" ]; then echo "ERROR: GRADLE_REPO_URL required" && exit 1; fi && \
     mkdir -p /etc/skel/.gradle && \
     sed "s|GRADLE_REPO_URL|$GRADLE_REPO_URL|g" /tmp/gradle-init.gradle > /etc/skel/.gradle/init.gradle && \
     rm -f /tmp/gradle-init.gradle
@@ -148,8 +147,7 @@ RUN chmod +x /tmp/init-postgres.sh && /tmp/init-postgres.sh && rm /tmp/init-post
 # ===== Superset =====
 RUN python3 -m venv /opt/superset/venv
 
-# EXCEPTION: Superset venv uses public PyPI as fallback for open-source packages
-# This is intentional - apache-superset and dependencies are only on public PyPI
+# Superset venv uses public PyPI fallback
 ARG PYPI_INDEX_URL
 ARG PYPI_TRUSTED_HOST
 RUN /opt/superset/venv/bin/pip config set global.index-url "$PYPI_INDEX_URL" && \
