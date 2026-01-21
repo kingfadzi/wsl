@@ -105,6 +105,7 @@ RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" &&
     rm -rf /tmp/nvm.zip /tmp/nvm && \
     . $NVM_DIR/nvm.sh && \
     export NVM_NODEJS_ORG_MIRROR=$NVM_NODEJS_ORG_MIRROR && \
+    export NVM_CURL_OPTIONS="-#" && \
     nvm install --lts && \
     nvm alias default lts/* && \
     npm install -g yarn
