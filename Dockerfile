@@ -94,7 +94,11 @@ RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" &&
     mkdir -p $NVM_DIR && \
     curl -fL# "$NVM_INSTALL_URL" -o /tmp/nvm.zip && \
     unzip -q /tmp/nvm.zip -d /tmp/nvm && \
-    bash /tmp/nvm/*/install.sh && \
+    if [ -f /tmp/nvm/*/install.sh ]; then \
+        bash /tmp/nvm/*/install.sh; \
+    else \
+        cp -r /tmp/nvm/* $NVM_DIR/; \
+    fi && \
     rm -rf /tmp/nvm.zip /tmp/nvm && \
     . $NVM_DIR/nvm.sh && \
     nvm install 22 && \
