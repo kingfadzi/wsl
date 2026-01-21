@@ -103,16 +103,6 @@ RUN mkdir -p /etc && \
     echo "index-url = ${PYPI_INDEX_URL}" >> /etc/pip.conf && \
     echo "trusted-host = ${PYPI_TRUSTED_HOST}" >> /etc/pip.conf
 
-# ===== npm/yarn configuration =====
-ARG NPM_REGISTRY
-ARG SASS_BINARY_SITE
-RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc && \
-    echo "cafile=/etc/pki/tls/certs/ca-bundle.crt" >> /etc/npmrc && \
-    echo "sass_binary_site=${SASS_BINARY_SITE}" >> /etc/npmrc && \
-    echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc && \
-    echo "cafile \"/etc/pki/tls/certs/ca-bundle.crt\"" >> /etc/yarnrc && \
-    echo "sass-binary-site \"${SASS_BINARY_SITE}\"" >> /etc/yarnrc
-
 # ===== NVM + Node.js =====
 ARG NVM_INSTALL_URL
 ARG NVM_NODEJS_ORG_MIRROR
@@ -134,8 +124,19 @@ RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" &&
     nvm install --lts && \
     nvm alias default lts/*
 
-# ===== Global npm packages =====
-RUN . $NVM_DIR/nvm.sh && npm install -g yarn
+# ===== npm/yarn configuration (after Node.js installed) =====
+ARG NPM_REGISTRY
+ARG SASS_BINARY_SITE
+RUN . $NVM_DIR/nvm.sh && \
+    npm config set registry "${NPM_REGISTRY}" && \
+    npm config set cafile /etc/pki/tls/certs/ca-bundle.crt && \
+    npm install -g yarn --no-save && \
+    echo "registry=${NPM_REGISTRY}" > /etc/npmrc && \
+    echo "cafile=/etc/pki/tls/certs/ca-bundle.crt" >> /etc/npmrc && \
+    echo "sass_binary_site=${SASS_BINARY_SITE}" >> /etc/npmrc && \
+    echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc && \
+    echo "cafile \"/etc/pki/tls/certs/ca-bundle.crt\"" >> /etc/yarnrc && \
+    echo "sass-binary-site \"${SASS_BINARY_SITE}\"" >> /etc/yarnrc
 
 # ===== Gradle binary =====
 ARG GRADLE_VERSION
