@@ -15,6 +15,7 @@ ARG PYPI_INDEX_URL=
 ARG PYPI_TRUSTED_HOST=
 ARG NPM_REGISTRY=
 ARG SASS_BINARY_SITE=
+ARG TLS_CA_BUNDLE_URL=
 ARG MAVEN_REPO_URL=
 ARG GRADLE_REPO_URL=
 ARG GRADLE_DIST_URL=
@@ -75,6 +76,23 @@ RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERS
     && alternatives --install /usr/bin/pip pip /usr/bin/pip${PYTHON_VERSION} 1 \
     && alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip${PYTHON_VERSION} 1
 
+# ===== Corporate TLS CA Bundle + Java Cacerts =====
+ARG TLS_CA_BUNDLE_URL
+RUN if [ -n "$TLS_CA_BUNDLE_URL" ]; then \
+        curl -fL# "$TLS_CA_BUNDLE_URL" -o /tmp/certs.zip && \
+        unzip -q /tmp/certs.zip -d /tmp/certs && \
+        find /tmp/certs -name "tls-ca-bundle.pem" -exec cp {} /etc/pki/ca-trust/source/anchors/ \; && \
+        update-ca-trust extract && \
+        JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java) 2>/dev/null)) 2>/dev/null) && \
+        if [ -n "$JAVA_HOME" ] && [ -d "$JAVA_HOME/lib/security" ]; then \
+            find /tmp/certs -name "cacerts" -exec cp {} $JAVA_HOME/lib/security/cacerts \; ; \
+        fi && \
+        rm -rf /tmp/certs.zip /tmp/certs && \
+        echo "Corporate certificates installed (TLS CA bundle + Java cacerts)"; \
+    else \
+        echo "WARNING: TLS_CA_BUNDLE_URL not set - using system defaults"; \
+    fi
+
 # ===== Package registries =====
 
 # pip (system-wide)
@@ -85,15 +103,13 @@ RUN mkdir -p /etc && \
     echo "index-url = ${PYPI_INDEX_URL}" >> /etc/pip.conf && \
     echo "trusted-host = ${PYPI_TRUSTED_HOST}" >> /etc/pip.conf
 
-# npm/yarn (system-wide)
+# ===== npm/yarn configuration =====
 ARG NPM_REGISTRY
 ARG SASS_BINARY_SITE
 RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc && \
-    echo "strict-ssl=false" >> /etc/npmrc && \
     echo "cafile=/etc/pki/tls/certs/ca-bundle.crt" >> /etc/npmrc && \
     echo "sass_binary_site=${SASS_BINARY_SITE}" >> /etc/npmrc && \
     echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc && \
-    echo "strict-ssl false" >> /etc/yarnrc && \
     echo "cafile \"/etc/pki/tls/certs/ca-bundle.crt\"" >> /etc/yarnrc && \
     echo "sass-binary-site \"${SASS_BINARY_SITE}\"" >> /etc/yarnrc
 
@@ -116,8 +132,10 @@ RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" &&
     export NVM_NODEJS_ORG_MIRROR=$NVM_NODEJS_ORG_MIRROR && \
     export NVM_CURL_OPTIONS="-#" && \
     nvm install --lts && \
-    nvm alias default lts/* && \
-    npm install -g yarn
+    nvm alias default lts/*
+
+# ===== Global npm packages =====
+RUN . $NVM_DIR/nvm.sh && npm install -g yarn
 
 # ===== Gradle binary =====
 ARG GRADLE_VERSION

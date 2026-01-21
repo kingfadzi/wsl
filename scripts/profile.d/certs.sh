@@ -1,55 +1,31 @@
 #!/bin/bash
-# Update system certificates from Windows mount
+# Add Zscaler certs to system trust (VPN only)
 # Sourced from /etc/profile.d/02-certs.sh
 
-# Only run for interactive shells
 [[ $- != *i* ]] && return
 
-CERT_SOURCE="/opt/wsl-certs/ca"
+ZSCALER_CERT_DIR="/opt/wsl-certs/zscaler"
 CERT_DEST="/etc/pki/ca-trust/source/anchors"
-CERT_MARKER="/var/lib/wsl-certs-updated"
-JAVA_CACERTS_SOURCE="/opt/wsl-certs/java/cacerts"
+MARKER="/var/lib/wsl-zscaler-updated"
 
-# Skip if no certs directory mounted
-[ ! -d "$CERT_SOURCE" ] && return
+[ ! -d "$ZSCALER_CERT_DIR" ] && return
 
-# Check if certs have changed (compare directory mtime)
-if [ -f "$CERT_MARKER" ]; then
-    SOURCE_MTIME=$(stat -c %Y "$CERT_SOURCE" 2>/dev/null)
-    MARKER_MTIME=$(stat -c %Y "$CERT_MARKER" 2>/dev/null)
-    [ "$SOURCE_MTIME" = "$MARKER_MTIME" ] && return
+# Check if certs changed
+if [ -f "$MARKER" ]; then
+    [ "$(stat -c %Y "$ZSCALER_CERT_DIR" 2>/dev/null)" = "$(stat -c %Y "$MARKER" 2>/dev/null)" ] && return
 fi
 
-# Copy PEM/CRT certs directly to system trust store
-CERTS_COPIED=0
-for cert in "$CERT_SOURCE"/*.pem "$CERT_SOURCE"/*.crt; do
+# Copy/convert Zscaler certs
+for cert in "$ZSCALER_CERT_DIR"/*.{pem,crt,cer} 2>/dev/null; do
     [ -f "$cert" ] || continue
-    sudo cp "$cert" "$CERT_DEST/" 2>/dev/null && CERTS_COPIED=1
+    name=$(basename "$cert" | sed 's/\.[^.]*$//')
+    case "$cert" in
+        *.cer) sudo openssl x509 -inform DER -in "$cert" -out "$CERT_DEST/${name}.pem" 2>/dev/null || \
+               sudo cp "$cert" "$CERT_DEST/${name}.pem" ;;
+        *)     sudo cp "$cert" "$CERT_DEST/" ;;
+    esac
 done
 
-# Convert DER certs (.cer) to PEM format individually
-for cert in "$CERT_SOURCE"/*.cer; do
-    [ -f "$cert" ] || continue
-    name=$(basename "$cert" .cer)
-    # Try DER format first, fall back to PEM
-    sudo sh -c "openssl x509 -inform DER -in '$cert' > '$CERT_DEST/${name}.pem' 2>/dev/null || openssl x509 -in '$cert' > '$CERT_DEST/${name}.pem'"
-    CERTS_COPIED=1
-done
-
-# Update system trust if certs were copied
-if [ "$CERTS_COPIED" = "1" ]; then
-    sudo update-ca-trust extract 2>/dev/null
-    echo "System certificates updated from Windows mount."
-fi
-
-# Update Java cacerts if provided
-if [ -f "$JAVA_CACERTS_SOURCE" ]; then
-    JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java) 2>/dev/null)) 2>/dev/null)
-    if [ -n "$JAVA_HOME" ] && [ -d "$JAVA_HOME/lib/security" ]; then
-        sudo cp "$JAVA_CACERTS_SOURCE" "$JAVA_HOME/lib/security/cacerts" 2>/dev/null
-        echo "Java cacerts updated from Windows mount."
-    fi
-fi
-
-# Update marker timestamp to match source
-sudo touch -r "$CERT_SOURCE" "$CERT_MARKER" 2>/dev/null
+sudo update-ca-trust extract 2>/dev/null
+sudo touch -r "$ZSCALER_CERT_DIR" "$MARKER" 2>/dev/null
+echo "Zscaler certificates updated."

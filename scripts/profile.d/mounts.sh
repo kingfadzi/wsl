@@ -63,8 +63,8 @@ create_mount_sudo "/etc/krb5.conf" "${WIN_BASE_DIR}/krb5/krb5.conf"
 create_mount_sudo "/etc/odbc.ini" "${WIN_BASE_DIR}/odbc/odbc.ini"
 create_mount_sudo "/etc/odbcinst.ini" "${WIN_BASE_DIR}/odbc/odbcinst.ini"
 
-# Certificates directory (system-wide)
-create_mount_sudo "/opt/wsl-certs" "${WIN_BASE_DIR}/certs"
+# Zscaler certificates directory (VPN only)
+create_mount_sudo "/opt/wsl-certs/zscaler" "${WIN_BASE_DIR}/certs/zscaler"
 
 # Secrets directory (API keys)
 create_mount_sudo "/opt/wsl-secrets" "${WIN_BASE_DIR}/secrets"
