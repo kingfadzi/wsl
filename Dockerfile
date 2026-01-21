@@ -86,7 +86,8 @@ RUN mkdir -p /etc && \
 
 # npm/yarn (system-wide)
 ARG NPM_REGISTRY
-RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc
+RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc && \
+    echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc
 
 # ===== NVM + Node.js =====
 ARG NVM_INSTALL_URL
