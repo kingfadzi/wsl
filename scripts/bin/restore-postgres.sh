@@ -36,15 +36,15 @@ usage() {
     echo "  --help             Show this help"
     echo ""
     echo "Arguments:"
-    echo "  database           Database to restore (superset, metabase, affine)"
+    echo "  database           Database to restore (superset, affine)"
     echo "                     If not specified, will prompt for selection"
     echo "  backup_file        Specific backup file (optional, defaults to latest)"
     echo ""
     echo "Examples:"
     echo "  $0                                         # Interactive mode (local)"
     echo "  $0 superset                                # Restore latest superset backup"
-    echo "  $0 -h remotehost -U dbuser metabase        # Restore to remote server"
-    echo "  $0 metabase metabase_20260117.dump         # Restore specific backup"
+    echo "  $0 -h remotehost -U dbuser affine          # Restore to remote server"
+    echo "  $0 affine affine_20260117.dump             # Restore specific backup"
     echo ""
     echo "For remote restores, set PGPASSWORD env var or use ~/.pgpass file"
     echo ""
@@ -105,13 +105,11 @@ run_pg_restore() {
 if [[ -z "$DATABASE" ]]; then
     echo "Available databases:"
     echo "  1) superset"
-    echo "  2) metabase"
-    echo "  3) affine"
-    read -p "Select database to restore [1-3]: " choice
+    echo "  2) affine"
+    read -p "Select database to restore [1-2]: " choice
     case $choice in
         1) DATABASE="superset" ;;
-        2) DATABASE="metabase" ;;
-        3) DATABASE="affine" ;;
+        2) DATABASE="affine" ;;
         *) echo "Invalid selection"; exit 1 ;;
     esac
 fi
@@ -182,9 +180,6 @@ case $DATABASE in
         systemctl stop superset-web 2>/dev/null || true
         systemctl stop superset-worker 2>/dev/null || true
         ;;
-    metabase)
-        systemctl stop metabase 2>/dev/null || true
-        ;;
     affine)
         systemctl stop affine 2>/dev/null || true
         ;;
@@ -212,9 +207,6 @@ case $DATABASE in
     superset)
         systemctl start superset-web 2>/dev/null || true
         systemctl start superset-worker 2>/dev/null || true
-        ;;
-    metabase)
-        systemctl start metabase 2>/dev/null || true
         ;;
     affine)
         systemctl start affine 2>/dev/null || true

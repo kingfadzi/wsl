@@ -7,7 +7,6 @@ ARG JAVA_VERSION=21
 ARG NVM_INSTALL_URL=
 ARG GRADLE_VERSION=8.5
 ARG SUPERSET_VERSION=6.0.0
-ARG METABASE_VERSION=0.50.21
 ARG AFFINE_VERSION=0.16.3
 ARG DEFAULT_USER=fadzi
 ARG DNS_SERVERS="8.8.8.8 8.8.4.4"
@@ -175,12 +174,6 @@ COPY config/superset_config.py /opt/superset/config/superset_config.py
 COPY scripts/init/superset.sh /tmp/init-superset.sh
 RUN chmod +x /tmp/init-superset.sh && /tmp/init-superset.sh && rm /tmp/init-superset.sh
 
-# ===== Metabase =====
-ARG METABASE_VERSION
-RUN mkdir -p /opt/metabase \
-    && curl -fL# -o /opt/metabase/metabase.jar \
-       "https://downloads.metabase.com/v${METABASE_VERSION}/metabase.jar"
-
 # ===== AFFiNE =====
 ARG AFFINE_VERSION
 RUN mkdir -p /opt/affine \
@@ -208,7 +201,7 @@ RUN echo "DISTRO_NAME=wsl-${PROFILE}" > /etc/wsl-manifest \
     && echo "BACKUP_DIR=${BACKUP_DIR}" >> /etc/wsl-manifest \
     && echo "WIN_BASE_DIR=${WIN_BASE_DIR}" >> /etc/wsl-manifest \
     && echo "PG_PORT=5432" >> /etc/wsl-manifest \
-    && echo 'DATABASES="superset metabase affine"' >> /etc/wsl-manifest \
+    && echo 'DATABASES="superset affine"' >> /etc/wsl-manifest \
     && echo "RETENTION_DAYS=7" >> /etc/wsl-manifest
 
 # ===== Kerberos environment =====
@@ -218,7 +211,6 @@ ENV KRB5CCNAME="${WIN_BASE_DIR}/krb5/cache/krb5cc"
 # ===== Systemd services =====
 COPY config/systemd/superset-web.service /etc/systemd/system/
 COPY config/systemd/superset-worker.service /etc/systemd/system/
-COPY config/systemd/metabase.service /etc/systemd/system/
 COPY config/systemd/affine.service /etc/systemd/system/
 
 # ===== Backup/restore scripts =====
@@ -250,7 +242,6 @@ RUN mkdir -p /etc/systemd/system/multi-user.target.wants && \
     ln -sf /usr/lib/systemd/system/crond.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /etc/systemd/system/superset-web.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /etc/systemd/system/superset-worker.service /etc/systemd/system/multi-user.target.wants/ && \
-    ln -sf /etc/systemd/system/metabase.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /etc/systemd/system/affine.service /etc/systemd/system/multi-user.target.wants/
 
 # Default user for WSL

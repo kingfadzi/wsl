@@ -36,8 +36,8 @@ Edit `profiles/vpn.args` or `profiles/lan.args` to customize.
 | `DEFAULT_USER` | `fadzi` | Linux username |
 | `DNS_SERVERS` | `8.8.8.8 8.8.4.4` | Space-separated DNS |
 | `PYTHON_VERSION` | `3.11` | Python version |
-| `NODE_VERSION` | `22` | Node.js version |
 | `JAVA_VERSION` | `21` | Java version |
+| `NVM_INSTALL_URL` | **required** | NVM install script URL |
 | `GRADLE_VERSION` | `8.5` | Gradle version |
 | `PYPI_INDEX_URL` | **required** | PyPI mirror URL |
 | `PYPI_TRUSTED_HOST` | **required** | PyPI trusted host |
@@ -80,13 +80,12 @@ mkdir C:\devhome\projects\wsl\krb5\cache
 | App | URL | Credentials |
 |-----|-----|-------------|
 | Superset | http://localhost:8088 | admin / admin |
-| Metabase | http://localhost:3000 | (setup on first access) |
 | AFFiNE | http://localhost:3010 | admin@localhost / password |
 
 ## Services
 
 ```bash
-systemctl status postgresql redis superset-web metabase affine
+systemctl status postgresql redis superset-web affine
 sudo systemctl restart superset-web
 journalctl -u superset-web -f
 ```

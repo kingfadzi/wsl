@@ -38,7 +38,7 @@ for i in {1..60}; do
 done
 
 # Create databases and users for each application
-for db in superset metabase affine; do
+for db in superset affine; do
     echo "Creating database: $db"
     su - postgres -c "psql -c \"CREATE USER $db WITH PASSWORD '$db';\"" || true
     su - postgres -c "psql -c \"CREATE DATABASE $db OWNER $db;\"" || true

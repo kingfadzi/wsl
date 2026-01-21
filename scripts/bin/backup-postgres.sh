@@ -41,7 +41,7 @@ usage() {
     echo "  --help             Show this help"
     echo ""
     echo "Arguments:"
-    echo "  database           Database to backup (superset, metabase, affine)"
+    echo "  database           Database to backup (superset, affine)"
     echo "                     If not specified, will prompt for selection"
     echo ""
     echo "Examples:"
@@ -115,13 +115,11 @@ fi
 if [[ -z "$DATABASE" ]]; then
     echo "Available databases:"
     echo "  1) superset"
-    echo "  2) metabase"
-    echo "  3) affine"
-    read -p "Select database [1-3]: " choice
+    echo "  2) affine"
+    read -p "Select database [1-2]: " choice
     case $choice in
         1) DATABASE="superset" ;;
-        2) DATABASE="metabase" ;;
-        3) DATABASE="affine" ;;
+        2) DATABASE="affine" ;;
         *) echo "Invalid selection"; exit 1 ;;
     esac
 fi
