@@ -48,7 +48,7 @@ Edit `profiles/vpn.args` or `profiles/lan.args` to customize.
 
 ## Windows Mounts
 
-Config files are stored on Windows and symlinked into WSL on first login:
+Config files are stored on Windows and symlinked into WSL on first login. Missing directories are created automatically.
 
 | Linux Path | Windows Path |
 |------------|--------------|
@@ -66,19 +66,11 @@ Config files are stored on Windows and symlinked into WSL on first login:
 | `~/Downloads` | `C:\Users\{username}\Downloads\` |
 | `~/f` | `F:\` |
 
-Create the Windows folders before first login:
+For certificates and Kerberos, create these manually with required files:
 ```powershell
-mkdir C:\devhome\projects\wsl\krb5
-mkdir C:\devhome\projects\wsl\odbc
 mkdir C:\devhome\projects\wsl\certs\ca
 mkdir C:\devhome\projects\wsl\certs\java
-mkdir C:\devhome\projects\wsl\secrets
-mkdir C:\devhome\projects\wsl\ssh
-mkdir C:\devhome\projects\wsl\claude
-mkdir C:\devhome\projects\wsl\m2
-mkdir C:\devhome\projects\wsl\gradle
-mkdir C:\devhome\projects\wsl\npm
-mkdir C:\devhome\projects\wsl\pip-cache
+mkdir C:\devhome\projects\wsl\krb5\cache
 ```
 
 ## Applications
@@ -137,14 +129,44 @@ ANTHROPIC_API_KEY=your-key
 
 All variables are exported automatically on login. Verify with `env | grep YOUR_VAR`.
 
+## Kerberos
+
+The environment uses a shared Kerberos ticket cache on Windows:
+
+```
+KRB5CCNAME=/mnt/c/devhome/projects/wsl/krb5/cache/krb5cc
+```
+
+**Using Git Bash to obtain tickets:**
+
+```bash
+# In Git Bash (Windows)
+export KRB5CCNAME=/c/devhome/projects/wsl/krb5/cache/krb5cc
+kinit your_principal@REALM
+
+# In WSL - ticket is already available
+klist
+```
+
+Ensure `C:\devhome\projects\wsl\krb5\krb5.conf` contains your realm configuration.
+
 ## Backup & Restore
 
 ```bash
-sudo backup-postgres.sh --all --yes   # Backup all DBs
-sudo restore-postgres.sh superset     # Restore specific DB
+# Local (peer auth)
+sudo backup-postgres.sh superset
+sudo backup-postgres.sh --all --yes
+
+# Remote (password auth - set PGPASSWORD or use ~/.pgpass)
+sudo backup-postgres.sh -h remotehost -U dbuser superset
+sudo restore-postgres.sh -h remotehost -U dbuser superset
+
+# Restore from specific file (full path or filename)
+sudo restore-postgres.sh superset /path/to/backup.dump
+sudo restore-postgres.sh superset superset_20260120.dump
 ```
 
-Automated daily backup at 3 AM via cron.
+Backups are stored in `{BACKUP_DIR}/{hostname}-{distro}/`. Automated daily backup at 3 AM via cron with 7-day retention.
 
 ## Troubleshooting
 
