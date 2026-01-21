@@ -5,6 +5,13 @@
 # Only run for interactive shells
 [[ $- != *i* ]] && return
 
-export NVM_DIR="/opt/nvm"
+# Load NVM config from manifest
+if [ -f /etc/wsl-manifest ]; then
+    source /etc/wsl-manifest
+fi
+
+export NVM_DIR="${NVM_DIR:-/opt/nvm}"
+[ -n "$NVM_NODEJS_ORG_MIRROR" ] && export NVM_NODEJS_ORG_MIRROR
+
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"

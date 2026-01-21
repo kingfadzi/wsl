@@ -5,6 +5,7 @@ ARG PROFILE=vpn
 ARG PYTHON_VERSION=3.11
 ARG JAVA_VERSION=21
 ARG NVM_INSTALL_URL=
+ARG NVM_NODEJS_ORG_MIRROR=
 ARG GRADLE_VERSION=8.5
 ARG SUPERSET_VERSION=6.0.0
 ARG AFFINE_VERSION=0.16.3
@@ -89,8 +90,10 @@ RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc
 
 # ===== NVM + Node.js =====
 ARG NVM_INSTALL_URL
+ARG NVM_NODEJS_ORG_MIRROR
 ENV NVM_DIR=/opt/nvm
 RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" && exit 1; fi && \
+    if [ -z "$NVM_NODEJS_ORG_MIRROR" ]; then echo "ERROR: NVM_NODEJS_ORG_MIRROR required" && exit 1; fi && \
     mkdir -p $NVM_DIR && \
     curl -fL# "$NVM_INSTALL_URL" -o /tmp/nvm.zip && \
     unzip -q /tmp/nvm.zip -d /tmp/nvm && \
@@ -101,8 +104,9 @@ RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" &&
     fi && \
     rm -rf /tmp/nvm.zip /tmp/nvm && \
     . $NVM_DIR/nvm.sh && \
-    nvm install 22 && \
-    nvm alias default 22 && \
+    export NVM_NODEJS_ORG_MIRROR=$NVM_NODEJS_ORG_MIRROR && \
+    nvm install --lts && \
+    nvm alias default lts/* && \
     npm install -g yarn
 
 # ===== Gradle binary =====
@@ -205,12 +209,15 @@ RUN useradd -m -s /bin/bash ${DEFAULT_USER} \
 # ===== Manifest (for backup scripts and mounts) =====
 ARG BACKUP_DIR
 ARG WIN_BASE_DIR
+ARG NVM_NODEJS_ORG_MIRROR
 RUN echo "DISTRO_NAME=wsl-${PROFILE}" > /etc/wsl-manifest \
     && echo "BACKUP_DIR=${BACKUP_DIR}" >> /etc/wsl-manifest \
     && echo "WIN_BASE_DIR=${WIN_BASE_DIR}" >> /etc/wsl-manifest \
     && echo "PG_PORT=5432" >> /etc/wsl-manifest \
     && echo 'DATABASES="superset affine"' >> /etc/wsl-manifest \
-    && echo "RETENTION_DAYS=7" >> /etc/wsl-manifest
+    && echo "RETENTION_DAYS=7" >> /etc/wsl-manifest \
+    && echo "NVM_DIR=/opt/nvm" >> /etc/wsl-manifest \
+    && echo "NVM_NODEJS_ORG_MIRROR=${NVM_NODEJS_ORG_MIRROR}" >> /etc/wsl-manifest
 
 # ===== Kerberos environment =====
 ARG WIN_BASE_DIR

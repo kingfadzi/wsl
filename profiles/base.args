@@ -10,3 +10,4 @@ GRADLE_DIST_URL=https://services.gradle.org/distributions
 
 # NVM
 NVM_INSTALL_URL=https://github.com/nvm-sh/nvm/archive/refs/tags/v0.34.0.zip
+NVM_NODEJS_ORG_MIRROR=https://nodejs.org/dist
