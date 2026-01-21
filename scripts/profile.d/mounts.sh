@@ -20,7 +20,7 @@ fi
 # Track if we created any new symlinks (for one-time message)
 MOUNTS_CREATED=0
 
-# Helper: create symlink, replacing existing file if target exists
+# Helper: create symlink, creating target dir if missing
 create_mount() {
     local link="$1"
     local target="$2"
@@ -28,14 +28,17 @@ create_mount() {
     # Skip if already correct symlink
     [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ] && return
 
-    # Create symlink if target exists (remove existing file first)
+    # Create target dir if missing
+    [ ! -e "$target" ] && mkdir -p "$target" 2>/dev/null
+
+    # Create symlink (remove existing file first)
     if [ -e "$target" ]; then
         rm -f "$link" 2>/dev/null
         ln -s "$target" "$link" 2>/dev/null && MOUNTS_CREATED=1
     fi
 }
 
-# Helper: create symlink with sudo, replacing existing file if target exists
+# Helper: create symlink with sudo, creating target dir if missing
 create_mount_sudo() {
     local link="$1"
     local target="$2"
@@ -43,7 +46,10 @@ create_mount_sudo() {
     # Skip if already correct symlink
     [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ] && return
 
-    # Create symlink if target exists (remove existing file first)
+    # Create target dir if missing
+    [ ! -e "$target" ] && sudo mkdir -p "$target" 2>/dev/null
+
+    # Create symlink (remove existing file first)
     if [ -e "$target" ]; then
         sudo rm -f "$link" 2>/dev/null
         sudo ln -s "$target" "$link" 2>/dev/null && MOUNTS_CREATED=1
