@@ -3,8 +3,8 @@ FROM almalinux:9
 # ===== Build args =====
 ARG PROFILE=vpn
 ARG PYTHON_VERSION=3.11
-ARG NODE_VERSION=22
 ARG JAVA_VERSION=21
+ARG NVM_INSTALL_URL=
 ARG GRADLE_VERSION=8.5
 ARG SUPERSET_VERSION=6.0.0
 ARG METABASE_VERSION=0.50.21
@@ -59,13 +59,10 @@ RUN for dns in ${DNS_SERVERS}; do echo "nameserver $dns" | tr -d '\r' >> /etc/re
 COPY scripts/profile.d/proxy.sh /etc/profile.d/proxy.sh
 RUN chmod 644 /etc/profile.d/proxy.sh
 
-# ===== Runtimes =====
+# ===== Runtimes (Python, Java) =====
 ARG PYTHON_VERSION
-ARG NODE_VERSION
 ARG JAVA_VERSION
-RUN dnf module enable -y nodejs:${NODE_VERSION} \
-    && dnf install -y \
-       nodejs npm \
+RUN dnf install -y \
        python${PYTHON_VERSION} python${PYTHON_VERSION}-pip python${PYTHON_VERSION}-devel \
        java-${JAVA_VERSION}-openjdk java-${JAVA_VERSION}-openjdk-devel \
     && dnf clean all
@@ -90,8 +87,16 @@ RUN mkdir -p /etc && \
 ARG NPM_REGISTRY
 RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc
 
-# Install yarn (needed for AFFiNE)
-RUN npm install -g yarn
+# ===== NVM + Node.js =====
+ARG NVM_INSTALL_URL
+ENV NVM_DIR=/opt/nvm
+RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" && exit 1; fi && \
+    mkdir -p $NVM_DIR && \
+    curl -fL# "$NVM_INSTALL_URL" | bash && \
+    . $NVM_DIR/nvm.sh && \
+    nvm install 22 && \
+    nvm alias default 22 && \
+    npm install -g yarn
 
 # ===== Gradle binary =====
 ARG GRADLE_VERSION
@@ -187,7 +192,7 @@ COPY scripts/init/affine.sh /tmp/init-affine.sh
 RUN chmod +x /tmp/init-affine.sh && /tmp/init-affine.sh && rm /tmp/init-affine.sh
 
 # ===== Claude Code =====
-RUN npm install -g @anthropic-ai/claude-code
+RUN . $NVM_DIR/nvm.sh && npm install -g @anthropic-ai/claude-code
 
 # ===== User =====
 ARG DEFAULT_USER
@@ -230,7 +235,8 @@ COPY scripts/profile.d/mounts.sh /etc/profile.d/01-mounts.sh
 COPY scripts/profile.d/certs.sh /etc/profile.d/02-certs.sh
 COPY scripts/profile.d/homedir.sh /etc/profile.d/03-homedir.sh
 COPY scripts/profile.d/secrets.sh /etc/profile.d/04-secrets.sh
-RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh /etc/profile.d/04-secrets.sh
+COPY scripts/profile.d/nvm.sh /etc/profile.d/05-nvm.sh
+RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh /etc/profile.d/04-secrets.sh /etc/profile.d/05-nvm.sh
 
 # ===== Cron for backups =====
 RUN echo "0 3 * * * root /usr/local/bin/backup-postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \

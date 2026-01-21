@@ -1,0 +1,12 @@
+# Common build args (shared by all profiles)
+
+# Package registries
+PYPI_INDEX_URL=https://pypi.org/simple
+PYPI_TRUSTED_HOST=pypi.org
+NPM_REGISTRY=https://registry.npmjs.org
+MAVEN_REPO_URL=https://repo.maven.apache.org/maven2
+GRADLE_REPO_URL=https://repo.maven.apache.org/maven2
+GRADLE_DIST_URL=https://services.gradle.org/distributions
+
+# NVM
+NVM_INSTALL_URL=https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh

@@ -30,14 +30,16 @@ echo "Image:   $IMAGE_NAME"
 echo "Output:  $TARBALL"
 echo
 
-# Build args from profile (use array to handle spaces in values)
+# Build args from base + profile (use array to handle spaces in values)
 BUILD_ARGS=("--build-arg" "PROFILE=$PROFILE")
-while IFS= read -r line; do
-    line="${line%$'\r'}"  # Strip Windows carriage return
-    # Skip comments and empty lines
-    [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
-    BUILD_ARGS+=("--build-arg" "$line")
-done < "profiles/${PROFILE}.args"
+for args_file in "profiles/base.args" "profiles/${PROFILE}.args"; do
+    while IFS= read -r line; do
+        line="${line%$'\r'}"  # Strip Windows carriage return
+        # Skip comments and empty lines
+        [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+        BUILD_ARGS+=("--build-arg" "$line")
+    done < "$args_file"
+done
 
 # Build
 echo "Building image..."

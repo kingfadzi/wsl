@@ -1,14 +1,4 @@
-# Build args for laptop (VPN/Zscaler profile)
-# Usage: docker build --build-arg PROFILE=vpn $(cat profiles/vpn.args | sed 's/^/--build-arg /') .
+# VPN profile (laptop with Zscaler)
+# Uses public DNS, inherits registries from base.args
 
 DNS_SERVERS=8.8.8.8 8.8.4.4
-
-# Package registries (REQUIRED - supply chain security)
-# For production: set to internal corporate mirrors (same as lan.args)
-# Below values are PUBLIC for testing only - replace with internal repos for production
-PYPI_INDEX_URL=https://pypi.org/simple
-PYPI_TRUSTED_HOST=pypi.org
-NPM_REGISTRY=https://registry.npmjs.org
-MAVEN_REPO_URL=https://repo.maven.apache.org/maven2
-GRADLE_REPO_URL=https://repo.maven.apache.org/maven2
-GRADLE_DIST_URL=https://services.gradle.org/distributions
