@@ -5,10 +5,12 @@ Docker-based WSL2 environment with development tools and BI applications.
 ## Quick Start
 
 ```bash
-# Build
-./build.sh vpn    # or: ./build.sh lan
+# Build and import (Git Bash on Windows - prompts to import)
+./build.sh vpn              # Profile: vpn or lan
+./build.sh vpn MyDistro     # Custom distro name (default: DevEnv)
 
-# Manual import (if not using build.sh on Windows)
+# Build only (Linux/WSL - manual import required)
+./build.sh vpn
 wsl --import DevEnv C:\WSL\DevEnv wsl-vpn.tar --version 2
 
 # Start
