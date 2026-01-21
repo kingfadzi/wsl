@@ -9,4 +9,4 @@ GRADLE_REPO_URL=https://repo.maven.apache.org/maven2
 GRADLE_DIST_URL=https://services.gradle.org/distributions
 
 # NVM
-NVM_INSTALL_URL=https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh
+NVM_INSTALL_URL=https://github.com/nvm-sh/nvm/archive/refs/tags/v0.34.0.zip

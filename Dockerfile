@@ -35,10 +35,11 @@ RUN dnf install -y --allowerasing \
     && dnf clean all
 
 # ===== SQL Server ODBC driver =====
-RUN curl -fL# https://packages.microsoft.com/config/rhel/9/prod.repo > /etc/yum.repos.d/mssql-release.repo || true
-RUN ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 && \
-    rm -f /etc/yum.repos.d/mssql-release.repo && \
-    dnf clean all
+RUN ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 2>/dev/null || { \
+        curl -fL# https://packages.microsoft.com/config/rhel/9/prod.repo > /etc/yum.repos.d/mssql-release.repo && \
+        ACCEPT_EULA=Y dnf install -y msodbcsql18 mssql-tools18 && \
+        rm -f /etc/yum.repos.d/mssql-release.repo; \
+    } && dnf clean all
 ENV PATH="$PATH:/opt/mssql-tools18/bin"
 
 # ===== WSL config =====
@@ -91,7 +92,10 @@ ARG NVM_INSTALL_URL
 ENV NVM_DIR=/opt/nvm
 RUN if [ -z "$NVM_INSTALL_URL" ]; then echo "ERROR: NVM_INSTALL_URL required" && exit 1; fi && \
     mkdir -p $NVM_DIR && \
-    curl -fL# "$NVM_INSTALL_URL" | bash && \
+    curl -fL# "$NVM_INSTALL_URL" -o /tmp/nvm.zip && \
+    unzip -q /tmp/nvm.zip -d /tmp/nvm && \
+    bash /tmp/nvm/*/install.sh && \
+    rm -rf /tmp/nvm.zip /tmp/nvm && \
     . $NVM_DIR/nvm.sh && \
     nvm install 22 && \
     nvm alias default 22 && \
