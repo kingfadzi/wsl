@@ -136,7 +136,10 @@ RUN . $NVM_DIR/nvm.sh && \
     echo "sass_binary_site=${SASS_BINARY_SITE}" >> /etc/npmrc && \
     echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc && \
     echo "cafile \"/etc/pki/tls/certs/ca-bundle.crt\"" >> /etc/yarnrc && \
-    echo "sass-binary-site \"${SASS_BINARY_SITE}\"" >> /etc/yarnrc
+    echo "sass-binary-site \"${SASS_BINARY_SITE}\"" >> /etc/yarnrc && \
+    echo "registry=${NPM_REGISTRY}" > /etc/skel/.npmrc && \
+    echo "cafile=/etc/pki/tls/certs/ca-bundle.crt" >> /etc/skel/.npmrc && \
+    echo "sass_binary_site=${SASS_BINARY_SITE}" >> /etc/skel/.npmrc
 
 # ===== Gradle binary =====
 ARG GRADLE_VERSION
@@ -233,12 +236,15 @@ ARG DEFAULT_USER
 RUN useradd -m -s /bin/bash ${DEFAULT_USER} \
     && echo "${DEFAULT_USER}:password" | chpasswd \
     && echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${DEFAULT_USER} \
-    && chmod 0440 /etc/sudoers.d/${DEFAULT_USER}
+    && chmod 0440 /etc/sudoers.d/${DEFAULT_USER} \
+    && chown -R ${DEFAULT_USER}:${DEFAULT_USER} /opt/nvm
 
 # ===== Manifest (for backup scripts and mounts) =====
 ARG BACKUP_DIR
 ARG WIN_BASE_DIR
 ARG NVM_NODEJS_ORG_MIRROR
+ARG NPM_REGISTRY
+ARG SASS_BINARY_SITE
 RUN echo "DISTRO_NAME=wsl-${PROFILE}" > /etc/wsl-manifest \
     && echo "BACKUP_DIR=${BACKUP_DIR}" >> /etc/wsl-manifest \
     && echo "WIN_BASE_DIR=${WIN_BASE_DIR}" >> /etc/wsl-manifest \
@@ -246,7 +252,9 @@ RUN echo "DISTRO_NAME=wsl-${PROFILE}" > /etc/wsl-manifest \
     && echo 'DATABASES="superset affine"' >> /etc/wsl-manifest \
     && echo "RETENTION_DAYS=7" >> /etc/wsl-manifest \
     && echo "NVM_DIR=/opt/nvm" >> /etc/wsl-manifest \
-    && echo "NVM_NODEJS_ORG_MIRROR=${NVM_NODEJS_ORG_MIRROR}" >> /etc/wsl-manifest
+    && echo "NVM_NODEJS_ORG_MIRROR=${NVM_NODEJS_ORG_MIRROR}" >> /etc/wsl-manifest \
+    && echo "NPM_REGISTRY=${NPM_REGISTRY}" >> /etc/wsl-manifest \
+    && echo "SASS_BINARY_SITE=${SASS_BINARY_SITE}" >> /etc/wsl-manifest
 
 # ===== Kerberos environment =====
 ARG WIN_BASE_DIR
@@ -272,7 +280,8 @@ COPY scripts/profile.d/certs.sh /etc/profile.d/02-certs.sh
 COPY scripts/profile.d/homedir.sh /etc/profile.d/03-homedir.sh
 COPY scripts/profile.d/secrets.sh /etc/profile.d/04-secrets.sh
 COPY scripts/profile.d/nvm.sh /etc/profile.d/05-nvm.sh
-RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh /etc/profile.d/04-secrets.sh /etc/profile.d/05-nvm.sh
+COPY scripts/profile.d/npm.sh /etc/profile.d/06-npm.sh
+RUN chmod 644 /etc/profile.d/01-mounts.sh /etc/profile.d/02-certs.sh /etc/profile.d/03-homedir.sh /etc/profile.d/04-secrets.sh /etc/profile.d/05-nvm.sh /etc/profile.d/06-npm.sh
 
 # ===== Cron for backups =====
 RUN echo "0 3 * * * root /usr/local/bin/backup-postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \
