@@ -33,6 +33,7 @@ echo
 # Build args from profile (use array to handle spaces in values)
 BUILD_ARGS=("--build-arg" "PROFILE=$PROFILE")
 while IFS= read -r line; do
+    line="${line%$'\r'}"  # Strip Windows carriage return
     # Skip comments and empty lines
     [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
     BUILD_ARGS+=("--build-arg" "$line")
