@@ -14,6 +14,7 @@ ARG DNS_SERVERS="8.8.8.8 8.8.4.4"
 ARG PYPI_INDEX_URL=
 ARG PYPI_TRUSTED_HOST=
 ARG NPM_REGISTRY=
+ARG SASS_BINARY_SITE=
 ARG MAVEN_REPO_URL=
 ARG GRADLE_REPO_URL=
 ARG GRADLE_DIST_URL=
@@ -86,8 +87,15 @@ RUN mkdir -p /etc && \
 
 # npm/yarn (system-wide)
 ARG NPM_REGISTRY
+ARG SASS_BINARY_SITE
 RUN echo "registry=${NPM_REGISTRY}" > /etc/npmrc && \
-    echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc
+    echo "strict-ssl=false" >> /etc/npmrc && \
+    echo "cafile=/etc/pki/tls/certs/ca-bundle.crt" >> /etc/npmrc && \
+    echo "sass_binary_site=${SASS_BINARY_SITE}" >> /etc/npmrc && \
+    echo "registry \"${NPM_REGISTRY}\"" > /etc/yarnrc && \
+    echo "strict-ssl false" >> /etc/yarnrc && \
+    echo "cafile \"/etc/pki/tls/certs/ca-bundle.crt\"" >> /etc/yarnrc && \
+    echo "sass-binary-site \"${SASS_BINARY_SITE}\"" >> /etc/yarnrc
 
 # ===== NVM + Node.js =====
 ARG NVM_INSTALL_URL
