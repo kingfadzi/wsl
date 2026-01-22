@@ -232,7 +232,7 @@ RUN chmod +x /tmp/init-affine.sh && /tmp/init-affine.sh && rm /tmp/init-affine.s
 
 # ===== Redash =====
 ARG REDASH_URL
-ARG REDASH_CACHE_BUST=2
+ARG REDASH_CACHE_BUST=3
 RUN mkdir -p /opt/redash \
     && curl -fL# "${REDASH_URL}" \
     | tar -xzf - -C /opt/redash
