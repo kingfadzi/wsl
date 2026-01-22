@@ -60,4 +60,14 @@ fi
 redis-cli shutdown || true
 su - postgres -c "pg_ctl -D $PGDATA stop -m fast" || true
 
+# Create .env for runtime (AFFiNE may require this over env vars)
+cat > /opt/affine/.env << 'EOF'
+NODE_ENV=production
+DATABASE_URL=postgres://affine:affine@localhost:5432/affine
+POSTGRES_HOST=localhost
+REDIS_SERVER_HOST=localhost
+AFFINE_SERVER_PORT=3010
+AFFINE_SERVER_HOST=0.0.0.0
+EOF
+
 echo "=== AFFiNE initialization complete ==="
