@@ -18,7 +18,7 @@ import_win_env() {
 }
 
 # Import API keys from Windows
-import_win_env "ANTHROPIC_API_KEY"
+import_win_env "ANTHROPIC_AUTH_TOKEN"
 import_win_env "OPENAI_API_KEY"
 import_win_env "JIRA_API_TOKEN"
 import_win_env "GITLAB_API_TOKEN"
