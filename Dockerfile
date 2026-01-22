@@ -68,6 +68,7 @@ ARG PYTHON_VERSION
 ARG JAVA_VERSION
 RUN dnf install -y \
        python${PYTHON_VERSION} python${PYTHON_VERSION}-pip python${PYTHON_VERSION}-devel \
+       python3.10 python3.10-pip python3.10-devel \
        java-${JAVA_VERSION}-openjdk java-${JAVA_VERSION}-openjdk-devel \
     && dnf clean all
 
