@@ -224,7 +224,7 @@ RUN chmod +x /tmp/init-superset.sh && /tmp/init-superset.sh && rm /tmp/init-supe
 ARG AFFINE_URL
 RUN mkdir -p /opt/affine \
     && curl -fL# "${AFFINE_URL}" \
-    | tar -xzf - -C /opt/affine
+    | tar --no-same-owner -xzf - -C /opt/affine
 
 # Run AFFiNE install.sh (migrations, admin user)
 COPY scripts/init/affine.sh /tmp/init-affine.sh
