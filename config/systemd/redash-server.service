@@ -1,0 +1,16 @@
+[Unit]
+Description=Redash Web Server
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/redash
+ExecStart=/opt/redash/bin/server
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

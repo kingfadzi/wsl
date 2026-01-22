@@ -9,6 +9,7 @@ ARG NVM_NODEJS_ORG_MIRROR=
 ARG GRADLE_VERSION=8.5
 ARG SUPERSET_VERSION=6.0.0
 ARG AFFINE_URL=
+ARG REDASH_URL=
 ARG DEFAULT_USER=fadzi
 ARG DNS_SERVERS="8.8.8.8 8.8.4.4"
 ARG PYPI_INDEX_URL=
@@ -228,6 +229,16 @@ RUN mkdir -p /opt/affine \
 COPY scripts/init/affine.sh /tmp/init-affine.sh
 RUN chmod +x /tmp/init-affine.sh && /tmp/init-affine.sh && rm /tmp/init-affine.sh
 
+# ===== Redash =====
+ARG REDASH_URL
+RUN mkdir -p /opt/redash \
+    && curl -fL# "${REDASH_URL}" \
+    | tar -xzf - -C /opt/redash
+
+# Initialize Redash (create .env, init database)
+COPY scripts/init/redash.sh /tmp/init-redash.sh
+RUN chmod +x /tmp/init-redash.sh && /tmp/init-redash.sh && rm /tmp/init-redash.sh
+
 # ===== Claude Code =====
 RUN . $NVM_DIR/nvm.sh && npm install -g @anthropic-ai/claude-code
 
@@ -249,7 +260,7 @@ RUN echo "DISTRO_NAME=wsl-${PROFILE}" > /etc/wsl-manifest \
     && echo "BACKUP_DIR=${BACKUP_DIR}" >> /etc/wsl-manifest \
     && echo "WIN_BASE_DIR=${WIN_BASE_DIR}" >> /etc/wsl-manifest \
     && echo "PG_PORT=5432" >> /etc/wsl-manifest \
-    && echo 'DATABASES="superset affine"' >> /etc/wsl-manifest \
+    && echo 'DATABASES="superset affine redash"' >> /etc/wsl-manifest \
     && echo "RETENTION_DAYS=7" >> /etc/wsl-manifest \
     && echo "NVM_DIR=/opt/nvm" >> /etc/wsl-manifest \
     && echo "NVM_NODEJS_ORG_MIRROR=${NVM_NODEJS_ORG_MIRROR}" >> /etc/wsl-manifest \
@@ -264,6 +275,9 @@ ENV KRB5CCNAME="${WIN_BASE_DIR}/krb5/cache/krb5cc"
 COPY config/systemd/superset-web.service /etc/systemd/system/
 COPY config/systemd/superset-worker.service /etc/systemd/system/
 COPY config/systemd/affine.service /etc/systemd/system/
+COPY config/systemd/redash-server.service /etc/systemd/system/
+COPY config/systemd/redash-worker.service /etc/systemd/system/
+COPY config/systemd/redash-scheduler.service /etc/systemd/system/
 
 # ===== Backup/restore scripts =====
 COPY scripts/bin/backup-postgres.sh /usr/local/bin/
@@ -295,7 +309,10 @@ RUN mkdir -p /etc/systemd/system/multi-user.target.wants && \
     ln -sf /usr/lib/systemd/system/crond.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /etc/systemd/system/superset-web.service /etc/systemd/system/multi-user.target.wants/ && \
     ln -sf /etc/systemd/system/superset-worker.service /etc/systemd/system/multi-user.target.wants/ && \
-    ln -sf /etc/systemd/system/affine.service /etc/systemd/system/multi-user.target.wants/
+    ln -sf /etc/systemd/system/affine.service /etc/systemd/system/multi-user.target.wants/ && \
+    ln -sf /etc/systemd/system/redash-server.service /etc/systemd/system/multi-user.target.wants/ && \
+    ln -sf /etc/systemd/system/redash-worker.service /etc/systemd/system/multi-user.target.wants/ && \
+    ln -sf /etc/systemd/system/redash-scheduler.service /etc/systemd/system/multi-user.target.wants/
 
 # Default user for WSL
 USER ${DEFAULT_USER}
