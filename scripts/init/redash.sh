@@ -33,7 +33,11 @@ EOF
 echo "Creating Python 3.9 venv and installing dependencies..."
 python3.9 -m venv /opt/redash/venv
 /opt/redash/venv/bin/pip install --upgrade pip
-/opt/redash/venv/bin/pip install --no-index --find-links /opt/redash/wheels -r /opt/redash/app/requirements.txt
+
+# Filter out packages not needed for Python 3.9 (backports-zoneinfo is for <3.9)
+grep -v 'backports-zoneinfo' /opt/redash/app/requirements.txt > /tmp/requirements-filtered.txt
+/opt/redash/venv/bin/pip install --no-index --find-links /opt/redash/wheels -r /tmp/requirements-filtered.txt
+rm /tmp/requirements-filtered.txt
 echo "Venv created and dependencies installed."
 
 # Create runtime directory for Unix socket
