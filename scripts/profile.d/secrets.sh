@@ -19,9 +19,8 @@ import_win_env() {
 
 # Import API keys from Windows
 import_win_env "ANTHROPIC_AUTH_TOKEN"
-import_win_env "OPENAI_API_KEY"
-import_win_env "JIRA_API_TOKEN"
-import_win_env "GITLAB_API_TOKEN"
-import_win_env "CONFLUENCE_API_TOKEN"
-import_win_env "BITBUCKET_API_TOKEN"
-import_win_env "SONARQUBE_API_TOKEN"
+import_win_env "JIRA_TOKEN"
+import_win_env "GITLAB_TOKEN"
+import_win_env "CONFLUENCE_TOKEN"
+import_win_env "BITBUCKET_TOKEN"
+import_win_env "SONAR_TOKEN"
