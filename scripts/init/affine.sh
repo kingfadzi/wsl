@@ -3,6 +3,17 @@
 # This script runs database migrations and sets up the admin user
 set -e
 
+# Source NVM to get node/npm in PATH
+export NVM_DIR=/opt/nvm
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# Verify node is available
+if ! command -v node &>/dev/null; then
+    echo "ERROR: node not found after sourcing NVM"
+    exit 1
+fi
+echo "Using Node.js $(node --version)"
+
 echo "=== Initializing AFFiNE ==="
 
 # AppStream PostgreSQL paths
@@ -47,13 +58,17 @@ done
 # Run AFFiNE install script if it exists
 if [[ -x ./install.sh ]]; then
     echo "Running AFFiNE install script..."
-    ./install.sh || echo "AFFiNE install completed (or partially completed)"
+    if ! ./install.sh; then
+        echo "WARNING: install.sh failed (may be expected if already installed)"
+    fi
 fi
 
 # Run migrations if there's a migrate script
 if [[ -x ./migrate.sh ]]; then
     echo "Running AFFiNE migrations..."
-    ./migrate.sh || echo "AFFiNE migrations completed (or skipped)"
+    if ! ./migrate.sh; then
+        echo "WARNING: migrate.sh failed - migrations may need to run at first boot"
+    fi
 fi
 
 # Stop services
