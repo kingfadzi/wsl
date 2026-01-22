@@ -69,6 +69,10 @@ done
 # Initialize Redash database tables
 echo "Initializing Redash database..."
 cd /opt/redash/app
+# Source the env file we created earlier
+set -a
+source /opt/redash/redash.env
+set +a
 /opt/redash/venv/bin/python manage.py database create_tables
 
 # Stop services
