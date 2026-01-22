@@ -2,10 +2,10 @@
 # Load API keys from Windows environment variables
 # Sourced from /etc/profile.d/04-secrets.sh
 
-[[ $- != *i* ]] && return
-
-# Only run if we're in WSL
-[[ ! -x /mnt/c/Windows/System32/cmd.exe ]] && return
+# Only run if we're in WSL (check for Windows interop)
+if [[ ! -x /mnt/c/Windows/System32/cmd.exe ]]; then
+    return 2>/dev/null || exit 0
+fi
 
 # Helper: read Windows env var and export if set
 import_win_env() {
