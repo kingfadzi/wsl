@@ -11,8 +11,22 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-PROFILE="${1:-vpn}"
-DISTRO_NAME="${2:-DevEnv}"
+# Parse arguments
+NO_CACHE=""
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --no-cache)
+            NO_CACHE="--no-cache"
+            ;;
+        *)
+            ARGS+=("$arg")
+            ;;
+    esac
+done
+
+PROFILE="${ARGS[0]:-vpn}"
+DISTRO_NAME="${ARGS[1]:-DevEnv}"
 
 if [[ ! -f "profiles/${PROFILE}.args" ]]; then
     echo "Error: Unknown profile '$PROFILE'"
@@ -43,7 +57,7 @@ done
 
 # Build
 echo "Building image..."
-docker build -t "$IMAGE_NAME" "${BUILD_ARGS[@]}" .
+docker build $NO_CACHE -t "$IMAGE_NAME" "${BUILD_ARGS[@]}" .
 
 # Export
 echo
