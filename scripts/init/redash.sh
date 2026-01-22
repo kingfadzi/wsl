@@ -29,6 +29,13 @@ REDASH_GUNICORN_TIMEOUT=60
 REDASH_BIND=0.0.0.0:5000
 EOF
 
+# Create Python venv and install dependencies (with visible output)
+echo "Creating Python venv and installing dependencies..."
+python3 -m venv /opt/redash/venv
+/opt/redash/venv/bin/pip install --upgrade pip
+/opt/redash/venv/bin/pip install --no-index --find-links /opt/redash/wheels -r /opt/redash/app/requirements.txt
+echo "Venv created and dependencies installed."
+
 # Create runtime directory for Unix socket
 mkdir -p /var/run/postgresql
 chown postgres:postgres /var/run/postgresql
@@ -57,7 +64,8 @@ done
 
 # Initialize Redash database tables
 echo "Initializing Redash database..."
-./bin/init_db
+cd /opt/redash/app
+/opt/redash/venv/bin/python manage.py database create_tables
 
 # Stop services
 redis-cli shutdown || true
