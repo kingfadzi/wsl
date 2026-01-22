@@ -8,7 +8,7 @@ ARG NVM_INSTALL_URL=
 ARG NVM_NODEJS_ORG_MIRROR=
 ARG GRADLE_VERSION=8.5
 ARG SUPERSET_VERSION=6.0.0
-ARG AFFINE_VERSION=0.16.3
+ARG AFFINE_URL=
 ARG DEFAULT_USER=fadzi
 ARG DNS_SERVERS="8.8.8.8 8.8.4.4"
 ARG PYPI_INDEX_URL=
@@ -219,9 +219,9 @@ COPY scripts/init/superset.sh /tmp/init-superset.sh
 RUN chmod +x /tmp/init-superset.sh && /tmp/init-superset.sh && rm /tmp/init-superset.sh
 
 # ===== AFFiNE =====
-ARG AFFINE_VERSION
+ARG AFFINE_URL
 RUN mkdir -p /opt/affine \
-    && curl -fL# "https://github.com/kingfadzi/AFFiNE/releases/download/v${AFFINE_VERSION}/affine-${AFFINE_VERSION}-linux-x64.tar.gz" \
+    && curl -fL# "${AFFINE_URL}" \
     | tar -xzf - -C /opt/affine
 
 # Run AFFiNE install.sh (migrations, admin user)
