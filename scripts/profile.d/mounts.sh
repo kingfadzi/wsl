@@ -78,11 +78,11 @@ source /usr/local/lib/mount-f-drive.sh
 try_mount_f_drive
 create_mount "$HOME/f" "$F_MOUNT"
 
-# Package manager caches (avoid WSL bloat)
-create_mount "$HOME/.m2" "${WIN_BASE_DIR}/m2"
-create_mount "$HOME/.gradle" "${WIN_BASE_DIR}/gradle"
-create_mount "$HOME/.npm" "${WIN_BASE_DIR}/npm"
-create_mount "$HOME/.cache/pip" "${WIN_BASE_DIR}/pip-cache"
+# Package manager caches (map to Windows user profile)
+create_mount "$HOME/.m2" "/mnt/c/Users/${WIN_USER}/.m2"
+create_mount "$HOME/.gradle" "/mnt/c/Users/${WIN_USER}/.gradle"
+create_mount "$HOME/.npm" "/mnt/c/Users/${WIN_USER}/.npm"
+create_mount "$HOME/.cache/pip" "/mnt/c/Users/${WIN_USER}/AppData/Local/pip/Cache"
 
 # Fix SSH permissions (required for SSH to work)
 if [ -L "$HOME/.ssh" ] && [ -d "$HOME/.ssh" ]; then
