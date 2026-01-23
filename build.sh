@@ -38,6 +38,15 @@ fi
 IMAGE_NAME="wsl-${PROFILE}"
 TARBALL="${IMAGE_NAME}.tar"
 
+# Check binaries exist
+for bin in affine.tar.gz redash.tar.gz; do
+    if [[ ! -f "$SCRIPT_DIR/binaries/$bin" ]]; then
+        echo "Error: Missing binaries/$bin"
+        echo "Download releases to the binaries/ directory"
+        exit 1
+    fi
+done
+
 echo "=== Building WSL image ==="
 echo "Profile: $PROFILE"
 echo "Image:   $IMAGE_NAME"

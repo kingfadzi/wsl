@@ -221,21 +221,22 @@ COPY scripts/init/superset.sh /tmp/init-superset.sh
 RUN chmod +x /tmp/init-superset.sh && /tmp/init-superset.sh && rm /tmp/init-superset.sh
 
 # ===== AFFiNE =====
-ARG AFFINE_URL
+ARG AFFINE_RELEASE
+COPY binaries/${AFFINE_RELEASE} /tmp/affine.tar.gz
 RUN mkdir -p /opt/affine \
-    && curl -fL# "${AFFINE_URL}" \
-    | tar --no-same-owner -xzf - -C /opt/affine
+    && tar --no-same-owner -xzf /tmp/affine.tar.gz -C /opt/affine \
+    && rm /tmp/affine.tar.gz
 
 # Run AFFiNE install.sh (migrations, admin user)
 COPY scripts/init/affine.sh /tmp/init-affine.sh
 RUN chmod +x /tmp/init-affine.sh && /tmp/init-affine.sh && rm /tmp/init-affine.sh
 
 # ===== Redash =====
-ARG REDASH_URL
-ARG REDASH_CACHE_BUST=3
+ARG REDASH_RELEASE
+COPY binaries/${REDASH_RELEASE} /tmp/redash.tar.gz
 RUN mkdir -p /opt/redash \
-    && curl -fL# "${REDASH_URL}" \
-    | tar -xzf - -C /opt/redash
+    && tar -xzf /tmp/redash.tar.gz -C /opt/redash \
+    && rm /tmp/redash.tar.gz
 
 # Initialize Redash (create .env, init database)
 COPY scripts/init/redash.sh /tmp/init-redash.sh

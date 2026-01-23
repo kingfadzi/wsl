@@ -38,3 +38,6 @@ Thumbs.db
 *.tar
 *.tar.gz
 wsl-*.tar
+
+# Exception: allow binaries directory
+!binaries/

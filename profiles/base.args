@@ -16,8 +16,6 @@ NVM_NODEJS_ORG_MIRROR=https://nodejs.org/dist
 # TLS CA Bundle (empty for dev - uses system defaults)
 TLS_CA_BUNDLE_URL=
 
-# AFFiNE
-AFFINE_URL=https://github.com/kingfadzi/AFFiNE/releases/download/v0.16.3/affine-0.16.3-linux-x64.tar.gz
-
-# Redash
-REDASH_URL=https://github.com/kingfadzi/redash-bundler/releases/download/v25.8.0/redash-bundle-v25.8.0.tgz
+# Binaries (local files in binaries/)
+AFFINE_RELEASE=affine.tar.gz
+REDASH_RELEASE=redash.tar.gz
