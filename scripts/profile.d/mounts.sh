@@ -70,10 +70,13 @@ create_mount_sudo "/opt/wsl-certs/zscaler" "${WIN_BASE_DIR}/certs/zscaler"
 create_mount_sudo "/opt/wsl-secrets" "${WIN_BASE_DIR}/secrets"
 
 # User home symlinks
-create_mount "$HOME/.ssh" "${WIN_BASE_DIR}/ssh"
-create_mount "$HOME/.claude" "${WIN_BASE_DIR}/claude"
+create_mount "$HOME/.ssh" "/mnt/c/Users/${WIN_USER}/.ssh"
+create_mount "$HOME/.claude" "/mnt/c/Users/${WIN_USER}/.claude"
 create_mount "$HOME/Downloads" "/mnt/c/Users/${WIN_USER}/Downloads"
-create_mount "$HOME/f" "/mnt/f"
+# Mount F: network drive (doesn't automount like local drives)
+source /usr/local/lib/mount-f-drive.sh
+try_mount_f_drive
+create_mount "$HOME/f" "$F_MOUNT"
 
 # Package manager caches (avoid WSL bloat)
 create_mount "$HOME/.m2" "${WIN_BASE_DIR}/m2"

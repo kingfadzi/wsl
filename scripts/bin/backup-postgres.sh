@@ -12,6 +12,11 @@ if [[ ! -f "$MANIFEST" ]]; then
 fi
 source "$MANIFEST"
 
+# Try to mount F: drive (network drive doesn't automount)
+# If mount fails, /mnt/f exists as local fallback
+source /usr/local/lib/mount-f-drive.sh
+try_mount_f_drive || true
+
 # Defaults (manifest provides: BACKUP_DIR, PG_PORT, DATABASES, RETENTION_DAYS, DISTRO_NAME)
 BACKUP_BASE_DIR="${BACKUP_DIR:-/var/backups/postgresql}"
 ALL_DATABASES="${DATABASES:-}"

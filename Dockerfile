@@ -252,6 +252,13 @@ RUN useradd -m -s /bin/bash ${DEFAULT_USER} \
     && chmod 0440 /etc/sudoers.d/${DEFAULT_USER} \
     && chown -R ${DEFAULT_USER}:${DEFAULT_USER} /opt/nvm
 
+# ===== F: drive mount point (local fallback if network drive unavailable) =====
+RUN mkdir -p /mnt/f
+
+# ===== F: drive mount helper =====
+COPY scripts/lib/mount-f-drive.sh /usr/local/lib/mount-f-drive.sh
+RUN chmod 644 /usr/local/lib/mount-f-drive.sh
+
 # ===== Manifest (for backup scripts and mounts) =====
 ARG BACKUP_DIR
 ARG WIN_BASE_DIR
