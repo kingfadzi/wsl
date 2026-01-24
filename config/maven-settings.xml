@@ -4,6 +4,9 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0
                               https://maven.apache.org/xsd/settings-1.2.0.xsd">
 
+  <!-- Use Linux home directory - symlinked to Windows .m2 via mounts.sh -->
+  <localRepository>${user.home}/.m2/repository</localRepository>
+
   <mirrors>
     <mirror>
       <id>corp-mirror</id>
