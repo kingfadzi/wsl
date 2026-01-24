@@ -2,7 +2,7 @@
 # Development environment with PostgreSQL, Redis, Superset, AFFiNE, Redash
 #
 # Build: ./build.sh vpn
-# Import: wsl --import DevEnv C:\wsl\DevEnv wsl-vpn.tar --version 2
+# Import: wsl --import DevEnv C:\wsl\DevEnv devenv-vpn.tar --version 2
 #
 # Requires: wsl-base:${PROFILE} to be built first (auto-builds if missing)
 #
@@ -163,7 +163,7 @@ ARG WIN_BASE_DIR
 ARG NVM_NODEJS_ORG_MIRROR
 ARG NPM_REGISTRY
 ARG SASS_BINARY_SITE
-RUN echo "DISTRO_NAME=wsl-${PROFILE}" >> /etc/wsl-manifest \
+RUN echo "DISTRO_NAME=devenv-${PROFILE}" >> /etc/wsl-manifest \
     && echo "BACKUP_DIR=${BACKUP_DIR}" >> /etc/wsl-manifest \
     && echo "PG_PORT=5432" >> /etc/wsl-manifest \
     && echo 'DATABASES="superset affine redash"' >> /etc/wsl-manifest \

@@ -64,7 +64,7 @@ if [[ ! -f "profiles/${PROFILE}.args" ]]; then
     exit 1
 fi
 
-IMAGE_NAME="wsl-${PROFILE}"
+IMAGE_NAME="devenv-${PROFILE}"
 TARBALL="${IMAGE_NAME}.tar"
 
 # ============================================
