@@ -147,8 +147,7 @@ RUN mkdir -p /opt/redash \
 COPY scripts/init/redash.sh /tmp/init-redash.sh
 RUN chmod +x /tmp/init-redash.sh && /tmp/init-redash.sh && rm /tmp/init-redash.sh
 
-# ===== Claude Code (via npm, already available from base) =====
-RUN . /opt/nvm/nvm.sh && npm install -g @anthropic-ai/claude-code 2>/dev/null || true
+# Note: Claude Code is now provided by wsl-base image
 
 # ===== Manifest (for backup scripts and mounts) =====
 ARG BACKUP_DIR
