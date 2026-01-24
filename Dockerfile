@@ -150,13 +150,6 @@ RUN chmod +x /tmp/init-redash.sh && /tmp/init-redash.sh && rm /tmp/init-redash.s
 # ===== Claude Code (via npm, already available from base) =====
 RUN . /opt/nvm/nvm.sh && npm install -g @anthropic-ai/claude-code 2>/dev/null || true
 
-# ===== F: drive mount point (local fallback if network drive unavailable) =====
-RUN mkdir -p /mnt/f
-
-# ===== F: drive mount helper =====
-COPY scripts/lib/mount-f-drive.sh /usr/local/lib/mount-f-drive.sh
-RUN chmod 644 /usr/local/lib/mount-f-drive.sh
-
 # ===== Manifest (for backup scripts and mounts) =====
 ARG BACKUP_DIR
 ARG WIN_BASE_DIR
@@ -194,12 +187,11 @@ COPY scripts/bin/start-affine.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/*.sh
 
-# ===== Windows mounts setup (symlinks on first login) =====
-COPY scripts/profile.d/mounts.sh /etc/profile.d/10-mounts.sh
-COPY scripts/profile.d/certs.sh /etc/profile.d/11-certs.sh
-COPY scripts/profile.d/homedir.sh /etc/profile.d/12-homedir.sh
-COPY scripts/profile.d/secrets.sh /etc/profile.d/13-secrets.sh
-RUN chmod 644 /etc/profile.d/10-mounts.sh /etc/profile.d/11-certs.sh /etc/profile.d/12-homedir.sh /etc/profile.d/13-secrets.sh
+# ===== Profile scripts (devenv-specific, runs after base's 00-05) =====
+# Note: mounts.sh and secrets.sh are now in wsl-base
+COPY scripts/profile.d/certs.sh /etc/profile.d/06-certs.sh
+COPY scripts/profile.d/homedir.sh /etc/profile.d/07-homedir.sh
+RUN chmod 644 /etc/profile.d/06-certs.sh /etc/profile.d/07-homedir.sh
 
 # ===== Cron for backups =====
 RUN echo "0 3 * * * root /usr/local/bin/backup-postgres.sh --all --yes" > /etc/cron.d/postgresql-backup \
