@@ -1,6 +1,7 @@
-# Common build args (shared by all profiles)
+# DevEnv specific build arguments
+# Base system args (Java, Python, DNS, NVM, etc.) are in wsl-base
 
-# Package registries
+# Package registries (for devenv-specific apps like Superset)
 PYPI_INDEX_URL=https://pypi.org/simple
 PYPI_TRUSTED_HOST=pypi.org
 NPM_REGISTRY=https://registry.npmjs.org
@@ -9,13 +10,13 @@ MAVEN_REPO_URL=https://repo.maven.apache.org/maven2
 GRADLE_REPO_URL=https://repo.maven.apache.org/maven2
 GRADLE_DIST_URL=https://services.gradle.org/distributions
 
-# NVM
-NVM_INSTALL_URL=https://github.com/nvm-sh/nvm/archive/refs/tags/v0.34.0.zip
-NVM_NODEJS_ORG_MIRROR=https://nodejs.org/dist
-
-# TLS CA Bundle (empty for dev - uses system defaults)
-TLS_CA_BUNDLE_URL=
-
 # Binaries (local files in binaries/)
 AFFINE_RELEASE=affine.tar.gz
 REDASH_RELEASE=redash.tar.gz
+
+# Windows integration
+WIN_BASE_DIR=/mnt/c/devhome/projects/wsl
+BACKUP_DIR=/mnt/f/backups/postgresql
+
+# Default login user (must match wsl-base)
+DEFAULT_USER=fadzi
