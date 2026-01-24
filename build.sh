@@ -169,7 +169,7 @@ export_image() {
 # Prompt for WSL import (Windows only)
 prompt_wsl_import() {
     # Check if running on Windows (Git Bash / MSYS)
-    if [[ "$OSTYPE" != "msys" && "$OSTYPE" != "cygwin" && -z "$WINDIR" ]]; then
+    if [[ "$OSTYPE" != "msys" && "$OSTYPE" != "cygwin" && -z "${WINDIR:-}" ]]; then
         echo ""
         echo "To import on Windows:"
         echo "  wsl --import $DISTRO_NAME C:\\WSL\\$DISTRO_NAME $TARBALL --version 2"
